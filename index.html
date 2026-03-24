@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS STUDY LOG | B00 Pro Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --ocean-dark: #050b14;
+            --ocean-deep: #0a192f;
+            --sza-blue: #64ffda;
+            --sza-white: #e2e8f0;
+            --fire: #ff4d4d;
+        }
+
+        body {
+            background-color: var(--ocean-dark);
+            color: var(--sza-white);
+            font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(circle at 50% 0%, var(--ocean-deep) 0%, var(--ocean-dark) 100%);
+            min-height: 100vh;
+        }
+
+        body.in-focus { overflow: hidden; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-sos {
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.1em;
+        }
+
+        .btn-sos:hover:not(:disabled) {
+            background: var(--sza-blue);
+            color: #000;
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+        }
+
+        .btn-sos:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        .tab-btn.active {
+            border-bottom: 2px solid var(--sza-blue);
+            color: var(--sza-blue);
+            opacity: 1;
+        }
+
+        .pomo-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+            transition: all 0.5s;
+        }
+
+        #focus-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--sza-blue); transition: width 0.8s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="p-6 md:p-10">
+
+    <div id="focus-overlay">
+        <h2 id="focus-subject-display" class="text-[10px] uppercase tracking-[0.5em] mb-10 opacity-50 text-sza-blue">Deep Work Session</h2>
+        <div class="text-8xl font-thin tracking-tighter mb-10" id="focus-time">25:00</div>
+        <button onclick="exitFocus()" class="text-[10px] border border-white/10 px-8 py-3 rounded-full opacity-20 hover:opacity-100 transition uppercase">Thoát Focus</button>
+    </div>
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
+            <div>
+                <h1 class="text-6xl font-extralight italic tracking-tighter text-white">SOS <span class="text-xs not-italic font-bold bg-sza-blue text-black px-2 ml-2 rounded">B00</span></h1>
+                <div class="flex items-center gap-4 mt-3">
+                    <p id="quote" class="text-[10px] uppercase tracking-widest opacity-40">"Loading purpose..."</p>
+                    <div id="streak-badge" class="hidden flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
+                        🔥 <span id="streak-count">0</span> NGÀY
+                    </div>
+                </div>
+            </div>
+            <div class="text-left md:text-right mt-4 md:mt-0">
+                <div id="digital-clock" class="text-2xl font-light tracking-widest">00:00:00</div>
+                <div id="current-date" class="text-[10px] uppercase opacity-30 mt-1">-- --, ----</div>
+            </div>
+        </header>
+
+        <nav class="flex border-b border-white/10 mb-8 overflow-x-auto gap-8">
+            <button onclick="switchTab('log')" id="tab-log" class="tab-btn active pb-4 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition">Hệ thống</button>
+            <button onclick="switchTab('study')" id="tab-study" class="tab-btn pb-4 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition">Phòng học</button>
+            <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn pb-4 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition">Thống kê</button>
+        </nav>
+
+        <div id="section-log" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass-card p-8 rounded-3xl border-sza-blue/20">
+                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Mục tiêu hôm nay</h3>
+                    <div class="flex justify-between items-end mb-2">
+                        <span id="goal-text" class="text-sm font-light">-- Pomodoros</span>
+                        <span id="goal-progress-text" class="text-[10px] opacity-50">0/0</span>
+                    </div>
+                    <div class="progress-bar mb-4"><div id="goal-progress-fill" class="progress-fill" style="width: 0%"></div></div>
+                    <p id="goal-motivation" class="text-[9px] italic opacity-30">Đừng để thời gian trôi vô ích.</p>
+                </div>
+
+                <div class="glass-card p-8 rounded-3xl text-center">
+                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Chấm công ngủ</h3>
+                    <button id="logBtn" onclick="handleSleepLog()" class="btn-sos w-full py-5 rounded-2xl uppercase text-[10px] font-bold mb-4">Ghi Nhận Giờ Ngủ</button>
+                    <p id="lastLogInfo" class="text-[9px] opacity-30 italic">Chỉ khả dụng sau 22h00</p>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-3xl overflow-hidden">
+                    <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                        <h3 class="text-[10px] uppercase tracking-widest opacity-50">Nhật ký vận hành</h3>
+                        <div class="flex gap-4 text-[9px]">
+                            <button onclick="exportData()" class="hover:text-sza-blue transition">EXPORT</button>
+                            <button onclick="document.getElementById('importInput').click()" class="hover:text-sza-blue transition">IMPORT</button>
+                            <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(event)">
+                        </div>
+                    </div>
+                    <div class="max-h-[400px] overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <tbody id="logTableBody"></tbody>
+                        </table>
+                        <div id="noDataMsg" class="p-10 text-center opacity-20 italic">Hệ thống trống...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-study" class="tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div class="glass-card p-8 rounded-3xl text-center">
+                    <div id="pomo-display" class="pomo-circle mb-8">
+                        <span id="pomo-time" class="text-5xl font-extralight tracking-tighter">25:00</span>
+                    </div>
+                    
+                    <select id="pomo-subject" onchange="savePomoState()" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] uppercase tracking-widest mb-6 focus:outline-none">
+                        <option value="Sinh học" class="bg-slate-900 text-sza-blue">Môn: SINH HỌC (Ưu tiên)</option>
+                        <option value="Toán học" class="bg-slate-900">Môn: TOÁN HỌC</option>
+                        <option value="Hóa học" class="bg-slate-900">Môn: HÓA HỌC</option>
+                    </select>
+
+                    <div class="grid grid-cols-2 gap-2 mb-6">
+                        <button id="pomo-start-btn" onclick="startPomo()" class="btn-sos py-3 rounded-xl text-[10px] font-bold uppercase">Start</button>
+                        <button onclick="enterFocus()" class="btn-sos py-3 rounded-xl text-[10px] font-bold uppercase bg-white/5 border-white/10">Focus</button>
+                        <button onclick="pausePomo()" class="col-span-1 btn-sos py-3 rounded-xl text-[9px] uppercase bg-white/5">Pause</button>
+                        <button onclick="resetPomo()" class="col-span-1 btn-sos py-3 rounded-xl text-[9px] uppercase bg-white/5">Reset</button>
+                    </div>
+                    <div id="pomo-count-display" class="text-[9px] opacity-30 uppercase tracking-[0.2em]">Hôm nay: 0 phiên</div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-card p-6 rounded-3xl">
+                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Lịch học B00 (Cá nhân hóa)</h3>
+                    <div id="schedule-list" class="space-y-4"></div>
+                </div>
+                <div class="glass-card p-6 rounded-3xl">
+                    <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50">Ghi chú nhanh</h3>
+                    <textarea id="studyNote" oninput="saveNote()" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs h-28 focus:outline-none focus:border-sza-blue/50" placeholder="Hôm nay đã học được gì..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-stats" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-center">
+                <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Tổng Pomo</h4><p id="stat-total-pomo" class="text-3xl font-light">0</p></div>
+                <div class="glass-card p-6 rounded-3xl border-sza-blue/20"><h4 class="text-[10px] opacity-40 uppercase mb-2 text-sza-blue">Sinh học</h4><p id="stat-bio-pomo" class="text-3xl font-light">0</p></div>
+                <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Toán học</h4><p id="stat-math-pomo" class="text-3xl font-light">0</p></div>
+                <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Hóa học</h4><p id="stat-chem-pomo" class="text-3xl font-light">0</p></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 glass-card p-8 rounded-3xl">
+                    <h3 class="text-[10px] uppercase tracking-widest mb-8 opacity-50">Năng suất 7 ngày</h3>
+                    <div class="flex gap-2 items-end justify-between h-48 px-4" id="pomo-chart"></div>
+                </div>
+                <div class="lg:col-span-1 space-y-4" id="achievement-list"></div>
+            </div>
+        </div>
+
+        <footer class="mt-20 text-center pb-10">
+            <p class="text-[9px] uppercase tracking-[0.4em] opacity-20 italic">Focus on the output. B00 Project.</p>
+        </footer>
+    </div>
+
+    <script>
+        let logs = JSON.parse(localStorage.getItem('study_logs_sza')) || [];
+        let notes = JSON.parse(localStorage.getItem('study_notes_sza')) || {};
+        let pomoStats = JSON.parse(localStorage.getItem('pomo_stats_sza')) || {
+            total: 0,
+            subjects: { "Sinh học": 0, "Toán học": 0, "Hóa học": 0 },
+            history: []
+        };
+        let userSettings = JSON.parse(localStorage.getItem('user_settings_sza')) || {
+            dailyGoal: 6,
+            streak: 0,
+            lastStudyDate: ""
+        };
+
+        const $ = (id) => document.getElementById(id);
+        const quotes = ["Đừng dừng lại cho đến khi tự hào.", "Sinh học là chìa khóa của B00.", "Mỗi Pomodoro là một bước tiến.", "Học đi bro, đừng láo."];
+
+        // --- Clock & Sleep Log ---
+        function updateTime() {
+            const now = new Date();
+            $('digital-clock').innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
+            $('current-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            const h = now.getHours();
+            const canLog = (h >= 22 || h < 5);
+            $('logBtn').disabled = !canLog;
+            if(!canLog) $('lastLogInfo').innerText = "Chỉ khả dụng sau 22h00";
+        }
+
+        function handleSleepLog() {
+            const today = new Date().toLocaleDateString('vi-VN');
+            if (logs.some(l => l.dateString === today)) {
+                showToast("Hôm nay chấm công rồi bro!", "error");
+                return;
+            }
+            
+            const now = new Date();
+            logs.unshift({
+                timestamp: now.getTime(),
+                dateString: today,
+                timeString: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            });
+            localStorage.setItem('study_logs_sza', JSON.stringify(logs));
+            renderLogs();
+            showToast("Đã ghi nhận giờ ngủ. Ngủ ngon!");
+        }
+
+        // --- Pomodoro State & Timer ---
+        let pomoInterval;
+        let pomoSeconds = 25 * 60;
+        let isPomoRunning = false;
+
+        function savePomoState() {
+            if (!isPomoRunning) {
+                localStorage.removeItem('pomo_state_sza');
+                return;
+            }
+            localStorage.setItem('pomo_state_sza', JSON.stringify({
+                endTime: Date.now() + (pomoSeconds * 1000),
+                subject: $('pomo-subject').value
+            }));
+        }
+
+        function loadPomoState() {
+            const saved = JSON.parse(localStorage.getItem('pomo_state_sza'));
+            if (saved && saved.endTime > Date.now()) {
+                pomoSeconds = Math.floor((saved.endTime - Date.now()) / 1000);
+                $('pomo-subject').value = saved.subject;
+                startPomo(true); // resume without sound
+            }
+        }
+
+        function startPomo(isResume = false) {
+            if (isPomoRunning && !isResume) return;
+            
+            clearInterval(pomoInterval); // Fix 1 & 2: Ngăn chặn double interval gây memory leak
+            
+            isPomoRunning = true;
+            $('pomo-start-btn').disabled = true; // Fix 5: Disable Start btn khi đang chạy
+            
+            $('pomo-display').style.borderColor = "#64ffda";
+            if(!isResume) new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3').play().catch(()=>{});
+            
+            pomoInterval = setInterval(() => {
+                pomoSeconds--;
+                if (pomoSeconds <= 0) completePomo();
+                updatePomoUI();
+                if (pomoSeconds % 10 === 0) savePomoState(); // Auto save every 10s
+            }, 1000);
+        }
+
+        function pausePomo() {
+            clearInterval(pomoInterval);
+            isPomoRunning = false;
+            $('pomo-start-btn').disabled = false; // Phục hồi nút Start
+            savePomoState();
+        }
+
+        function resetPomo() {
+            pausePomo();
+            pomoSeconds = 25 * 60;
+            updatePomoUI();
+            localStorage.removeItem('pomo_state_sza');
+            $('pomo-display').style.borderColor = "rgba(255,255,255,0.05)";
+        }
+
+        function updatePomoUI() {
+            const m = Math.floor(pomoSeconds / 60).toString().padStart(2, '0');
+            const s = (pomoSeconds % 60).toString().padStart(2, '0');
+            $('pomo-time').innerText = `${m}:${s}`;
+            $('focus-time').innerText = `${m}:${s}`;
+        }
+
+        function completePomo() {
+            pausePomo();
+            const sub = $('pomo-subject').value;
+            pomoStats.total++;
+            pomoStats.subjects[sub]++;
+            pomoStats.history.push({ date: new Date().toLocaleDateString('vi-VN'), subject: sub });
+            localStorage.setItem('pomo_stats_sza', JSON.stringify(pomoStats));
+            
+            updateStreak();
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#64ffda', '#ffffff'] }); // Fix 4: Giảm particleCount chống lag
+            
+            showToast(`+1 Pomodoro ${sub}.`);
+            resetPomo();
+            if(document.body.classList.contains('in-focus')) exitFocus();
+            renderStudyTab();
+        }
+
+        function updateStreak() {
+            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yStr = yesterday.toLocaleDateString('vi-VN');
+
+            if (userSettings.lastStudyDate === yStr) {
+                userSettings.streak++;
+            } else if (userSettings.lastStudyDate !== todayStr) {
+                userSettings.streak = 1;
+            }
+            userSettings.lastStudyDate = todayStr;
+            localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
+            renderHeader();
+        }
+
+        function enterFocus() {
+            document.body.classList.add('in-focus');
+            $('focus-overlay').style.display = 'flex';
+            $('focus-subject-display').innerText = "Đang cày: " + $('pomo-subject').value;
+            startPomo();
+        }
+
+        function exitFocus() {
+            document.body.classList.remove('in-focus');
+            $('focus-overlay').style.display = 'none';
+        }
+
+        // --- Anti-Distraction ---
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && isPomoRunning) {
+                showToast("Quay lại học đi bro, đừng láo!", "error");
+            }
+        });
+
+        // --- Renderers ---
+        function renderLogs() {
+            const body = $('logTableBody');
+            body.innerHTML = '';
+            if (logs.length === 0) { $('noDataMsg').classList.remove('hidden'); return; }
+            $('noDataMsg').classList.add('hidden');
+            logs.forEach((log, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-white/5 hover:bg-white/5 transition";
+                tr.innerHTML = `<td class="p-4 opacity-40">${log.dateString}</td><td class="p-4 font-light text-center">${log.timeString}</td><td class="p-4 text-right"><button onclick="deleteLog(${index})" class="text-red-500/30 hover:text-red-500">×</button></td>`;
+                body.appendChild(tr);
+            });
+        }
+
+        function renderStudyTab() {
+            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const pomoToday = pomoStats.history.filter(h => h.date === todayStr).length;
+            
+            // Fix 6: Đồng bộ Goal text với setting thay vì hardcode
+            $('goal-text').innerText = `${userSettings.dailyGoal} Pomodoros`;
+            $('pomo-count-display').innerText = `Hôm nay: ${pomoToday} phiên`;
+            $('goal-progress-text').innerText = `${pomoToday}/${userSettings.dailyGoal}`;
+            $('goal-progress-fill').style.width = Math.min((pomoToday / userSettings.dailyGoal) * 100, 100) + '%';
+            
+            const list = $('schedule-list');
+            list.innerHTML = '';
+            const day = new Date().getDay();
+            const tomorrow = (day + 1) % 7;
+            let tasks = [];
+            
+            if ([1, 2, 3, 4, 0].includes(tomorrow)) tasks.push({ m: 'Toán học', d: 'Chuẩn bị bài' });
+            if ([1, 0].includes(tomorrow)) tasks.push({ m: 'Sinh học', d: 'Môn trọng tâm' });
+            if ([4, 5, 6].includes(tomorrow)) tasks.push({ m: 'Hóa học', d: 'Bài tập về nhà' });
+            
+            // Fix 3: Tránh duplicate Sinh học trong lịch trình
+            if (!tasks.find(t => t.m === 'Sinh học')) {
+                tasks.push({ m: 'Sinh học', d: 'Chiến dịch lấy gốc' });
+            }
+
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-4 glass-card rounded-2xl border-l-2 border-sza-blue";
+                div.innerHTML = `<div><div class="text-[10px] font-bold text-sza-blue uppercase">${task.m}</div><div class="text-[9px] opacity-40 italic">${task.d}</div></div>`;
+                list.appendChild(div);
+            });
+            $('studyNote').value = notes[todayStr] || "";
+        }
+
+        function renderStatsTab() {
+            $('stat-total-pomo').innerText = pomoStats.total;
+            $('stat-bio-pomo').innerText = pomoStats.subjects['Sinh học'];
+            $('stat-math-pomo').innerText = pomoStats.subjects['Toán học'];
+            $('stat-chem-pomo').innerText = pomoStats.subjects['Hóa học'];
+
+            const chart = $('pomo-chart');
+            chart.innerHTML = '';
+            
+            const dailyCounts = [...Array(7)].map((_, idx) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - idx));
+                const dStr = d.toLocaleDateString('vi-VN');
+                return { 
+                    date: dStr, 
+                    count: pomoStats.history.filter(h => h.date === dStr).length 
+                };
+            });
+
+            const maxCount = Math.max(...dailyCounts.map(d => d.count), 1);
+
+            dailyCounts.forEach(day => {
+                const h = (day.count / maxCount) * 100;
+                const bar = document.createElement('div');
+                bar.className = "flex-1 flex flex-col items-center gap-2 group cursor-pointer";
+                bar.innerHTML = `
+                    <div class="text-[8px] opacity-0 group-hover:opacity-100 mb-1">${day.count}</div>
+                    <div class="w-full bg-sza-blue/10 rounded-t-lg transition-all duration-500 group-hover:bg-sza-blue/40" style="height: ${h}%"></div>
+                    <span class="text-[8px] opacity-30">${day.date.split('/')[0]}</span>
+                `;
+                chart.appendChild(bar);
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            $(`section-${tab}`).classList.remove('hidden');
+            $(`tab-${tab}`).classList.add('active');
+            if(tab === 'log') renderLogs();
+            if(tab === 'study') renderStudyTab();
+            if(tab === 'stats') renderStatsTab();
+        }
+
+        function showToast(m, type = "success") {
+            const t = document.createElement('div');
+            t.className = "fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] uppercase tracking-widest z-[200] border shadow-2xl transition-all";
+            const color = type === 'success' ? '#64ffda' : '#ef4444';
+            t.style.borderColor = color;
+            t.style.color = color;
+            t.innerText = m;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        function saveNote() {
+            notes[new Date().toLocaleDateString('vi-VN')] = $('studyNote').value;
+            localStorage.setItem('study_notes_sza', JSON.stringify(notes));
+        }
+
+        function renderHeader() {
+            $('quote').innerText = `"${quotes[Math.floor(Math.random()*quotes.length)]}"`;
+            if(userSettings.streak > 0) {
+                $('streak-badge').classList.remove('hidden');
+                $('streak-count').innerText = userSettings.streak;
+            }
+        }
+
+        function deleteLog(i) { logs.splice(i, 1); localStorage.setItem('study_logs_sza', JSON.stringify(logs)); renderLogs(); }
+        
+        function exportData() {
+            const blob = new Blob([JSON.stringify({logs, notes, pomoStats, userSettings})], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `sos-b00-data.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = JSON.parse(ev.target.result);
+                logs = data.logs || [];
+                notes = data.notes || {};
+                pomoStats = data.pomoStats || pomoStats;
+                userSettings = data.userSettings || userSettings;
+                localStorage.setItem('study_logs_sza', JSON.stringify(logs));
+                localStorage.setItem('study_notes_sza', JSON.stringify(notes));
+                localStorage.setItem('pomo_stats_sza', JSON.stringify(pomoStats));
+                localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
+                location.reload();
+            };
+            reader.readAsText(file);
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+        renderHeader();
+        renderLogs();
+        renderStudyTab();
+        loadPomoState();
+		if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("SW ok"))
+        .catch(err => console.log("SW lỗi", err));
+}
+    </script>
+</body>
+</html>
