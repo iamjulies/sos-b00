@@ -27,3 +27,11 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(clients.claim());
 });
+
+firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        $('profile-uid').textContent = user.uid;
+    } else {
+        $('profile-uid').textContent = 'Chưa đăng nhập';
+    }
+});
