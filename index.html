@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOS STUDY LOG | B00 Pro Edition</title>
+    <title>SOS STUDY LOG | B00 Pro Edition (V3 Realtime)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -16,7 +16,6 @@
             --fire: #ff4d4d;
         }
 
-        /* YÊU CẦU 4: THÊM THEME MỚI */
         body.theme-sunshine {
             --ocean-dark: #2a110a;
             --ocean-deep: #4a2111;
@@ -37,7 +36,7 @@
             font-family: 'Inter', sans-serif;
             background-image: radial-gradient(circle at 50% 0%, var(--ocean-deep) 0%, var(--ocean-dark) 100%);
             min-height: 100vh;
-            transition: background 0.5s ease, color 0.5s ease; /* Thêm hiệu ứng chuyển theme */
+            transition: background 0.5s ease, color 0.5s ease;
         }
 
         body.in-focus { overflow: hidden; }
@@ -53,6 +52,7 @@
             transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             letter-spacing: 0.1em;
+            cursor: pointer;
         }
 
         .btn-sos:hover:not(:disabled) {
@@ -63,13 +63,25 @@
 
         .btn-sos:disabled { opacity: 0.2; cursor: not-allowed; }
 
+        .tab-btn {
+            white-space: nowrap;
+            padding-bottom: 1rem;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .tab-btn:hover { opacity: 1; }
+
         .tab-btn.active {
             border-bottom: 2px solid var(--sza-blue);
             color: var(--sza-blue);
             opacity: 1;
         }
 
-        .pomo-circle {
+        .pomo-circle, .exam-circle {
             width: 200px;
             height: 200px;
             border-radius: 50%;
@@ -80,6 +92,21 @@
             margin: 0 auto;
             position: relative;
             transition: all 0.5s;
+        }
+        
+        .exam-circle {
+            width: 250px;
+            height: 250px;
+        }
+        .exam-warning {
+            border-color: var(--fire) !important;
+            color: var(--fire);
+            animation: pulse-red 1s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 77, 77, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
         }
 
         #focus-overlay {
@@ -96,13 +123,70 @@
         .progress-bar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--sza-blue); transition: width 0.8s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
         
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        /* Heatmap Styles */
+        .heatmap-grid {
+            display: grid;
+            grid-template-rows: repeat(7, 1fr);
+            grid-auto-flow: column;
+            gap: 4px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .heatmap-cell {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s;
+        }
+        .heatmap-cell:hover { transform: scale(1.5); }
+        
+        /* Achievement Badges with Tiers */
+        .badge {
+            transition: all 0.3s;
+            filter: grayscale(100%);
+            opacity: 0.3;
+            border-width: 2px;
+            border-color: rgba(255,255,255,0.05);
+        }
+        .badge.unlocked {
+            filter: grayscale(0%);
+            opacity: 1;
+        }
+        .badge.unlocked.tier-bronze {
+            border-color: #cd7f32;
+            box-shadow: 0 0 15px rgba(205, 127, 50, 0.2);
+        }
+        .badge.unlocked.tier-silver {
+            border-color: #c0c0c0;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.2);
+        }
+        .badge.unlocked.tier-gold {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(45deg, rgba(255,255,255,0.03), rgba(255, 215, 0, 0.1));
+        }
+
+        /* Sync ID Input styling */
+        .sync-input {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--sza-blue);
+            color: var(--sza-white);
+            outline: none;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+        .sync-input:focus {
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
+        }
     </style>
-    <link rel="manifest" href="manifest.json">
 </head>
 <body class="p-6 md:p-10">
 
+    <!-- Focus Overlay -->
     <div id="focus-overlay">
         <h2 id="focus-subject-display" class="text-[10px] uppercase tracking-[0.5em] mb-10 opacity-50 text-sza-blue">Deep Work Session</h2>
         <div class="text-8xl font-thin tracking-tighter mb-10" id="focus-time">25:00</div>
@@ -114,7 +198,6 @@
             <div>
                 <h1 class="text-6xl font-extralight italic tracking-tighter text-white">SOS <span class="text-xs not-italic font-bold bg-sza-blue text-black px-2 ml-2 rounded">B00</span></h1>
                 
-                <!-- YÊU CẦU 2: ĐỒNG HỒ ĐẾM NGƯỢC THPTQG -->
                 <div class="mt-2 inline-block px-3 py-1.5 rounded-lg bg-white/5 border border-sza-blue/30">
                     <p class="text-[10px] uppercase tracking-widest text-sza-blue font-bold mb-1">Target: THPTQG 11/06/2026</p>
                     <div id="exam-countdown" class="text-sm font-mono tracking-widest text-white">Loading...</div>
@@ -131,49 +214,53 @@
                 <div id="digital-clock" class="text-2xl font-light tracking-widest">00:00:00</div>
                 <div id="current-date" class="text-[10px] uppercase opacity-30 mt-1">-- --, ----</div>
                 
-                <!-- YÊU CẦU 4: CHUYỂN ĐỔI THEME -->
                 <div class="flex gap-2 mt-4 justify-start md:justify-end items-center">
                     <span class="text-[9px] uppercase opacity-40 tracking-widest">Vibe:</span>
-                    <button onclick="setTheme('sos')" title="SOS Original" class="w-4 h-4 rounded-full bg-[#050b14] border border-[#64ffda] hover:scale-110 transition"></button>
-                    <button onclick="setTheme('sunshine')" title="Eternal Sunshine (Ariana)" class="w-4 h-4 rounded-full bg-[#4a2111] border border-[#ffb56b] hover:scale-110 transition"></button>
-                    <button onclick="setTheme('sour')" title="Sour (Olivia)" class="w-4 h-4 rounded-full bg-[#311c4d] border border-[#a3e635] hover:scale-110 transition"></button>
+                    <button onclick="changeTheme('sos')" title="SOS Original" class="w-4 h-4 rounded-full bg-[#050b14] border border-[#64ffda] hover:scale-110 transition"></button>
+                    <button onclick="changeTheme('sunshine')" title="Eternal Sunshine" class="w-4 h-4 rounded-full bg-[#4a2111] border border-[#ffb56b] hover:scale-110 transition"></button>
+                    <button onclick="changeTheme('sour')" title="Sour" class="w-4 h-4 rounded-full bg-[#311c4d] border border-[#a3e635] hover:scale-110 transition"></button>
                 </div>
             </div>
         </header>
 
-        <nav class="flex border-b border-white/10 mb-8 overflow-x-auto gap-8">
-            <button onclick="switchTab('log')" id="tab-log" class="tab-btn active pb-4 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition">Hệ thống</button>
-            <button onclick="switchTab('study')" id="tab-study" class="tab-btn pb-4 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition">Phòng học</button>
-            <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn pb-4 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition">Thống kê</button>
+        <nav class="flex border-b border-white/10 mb-8 overflow-x-auto gap-8 no-scrollbar">
+            <button onclick="switchTab('log')" id="tab-log" class="tab-btn active text-sza-blue">Hệ thống</button>
+            <button onclick="switchTab('study')" id="tab-study" class="tab-btn">Phòng học</button>
+            <button onclick="switchTab('exam')" id="tab-exam" class="tab-btn">Phòng thi</button>
+            <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn">Thống kê</button>
+            <button onclick="switchTab('achievements')" id="tab-achievements" class="tab-btn">Thành tựu</button>
+            <button onclick="switchTab('profile')" id="tab-profile" class="tab-btn">Hồ sơ</button>
         </nav>
 
+        <!-- TAB HỆ THỐNG -->
         <div id="section-log" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1 space-y-6">
                 <div class="glass-card p-8 rounded-3xl border-sza-blue/20">
-                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Mục tiêu hôm nay <span class="text-[8px] text-sza-blue ml-2">(Randomize)</span></h3>
+                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50 flex justify-between">
+                        Mục tiêu hôm nay 
+                        <span class="text-[8px] text-sza-blue bg-sza-blue/10 px-2 rounded-full">45/TUẦN</span>
+                    </h3>
                     <div class="flex justify-between items-end mb-2">
                         <span id="goal-text" class="text-sm font-light">-- Pomodoros</span>
                         <span id="goal-progress-text" class="text-[10px] opacity-50">0/0</span>
                     </div>
                     <div class="progress-bar mb-4"><div id="goal-progress-fill" class="progress-fill" style="width: 0%"></div></div>
-                    <p id="goal-motivation" class="text-[9px] italic opacity-30">Đừng để thời gian trôi vô ích.</p>
+                    <p id="goal-motivation" class="text-[9px] italic opacity-30">Cố gắng phân bổ đều để Chủ Nhật không ngộp.</p>
                 </div>
 
                 <div class="glass-card p-8 rounded-3xl text-center">
                     <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Chấm công ngủ</h3>
                     <button id="logBtn" onclick="handleSleepLog()" class="btn-sos w-full py-5 rounded-2xl uppercase text-[10px] font-bold mb-4">Ghi Nhận Giờ Ngủ</button>
-                    <p id="lastLogInfo" class="text-[9px] opacity-30 italic">Chỉ khả dụng sau 22h00</p>
+                    <p id="lastLogInfo" class="text-[9px] opacity-30 italic">Chỉ khả dụng 22h - 5h</p>
                 </div>
             </div>
             
             <div class="lg:col-span-2">
-                <div class="glass-card rounded-3xl overflow-hidden">
+                <div class="glass-card rounded-3xl overflow-hidden h-full">
                     <div class="p-6 border-b border-white/5 flex justify-between items-center">
                         <h3 class="text-[10px] uppercase tracking-widest opacity-50">Nhật ký vận hành</h3>
-                        <div class="flex gap-4 text-[9px]">
-                            <button onclick="exportData()" class="hover:text-sza-blue transition">EXPORT</button>
-                            <button onclick="document.getElementById('importInput').click()" class="hover:text-sza-blue transition">IMPORT</button>
-                            <input type="file" id="importInput" class="hidden" accept=".json" onchange="importData(event)">
+                        <div class="flex gap-4 text-[9px] items-center">
+                            <span id="sync-status" class="text-sza-blue flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Offline</span>
                         </div>
                     </div>
                     <div class="max-h-[400px] overflow-y-auto">
@@ -186,6 +273,7 @@
             </div>
         </div>
 
+        <!-- TAB PHÒNG HỌC -->
         <div id="section-study" class="tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1">
                 <div class="glass-card p-8 rounded-3xl text-center">
@@ -215,25 +303,54 @@
                     <div id="schedule-list" class="space-y-4"></div>
                 </div>
                 
-                <!-- YÊU CẦU 5: NÂNG CẤP GHI CHÚ NHANH -->
                 <div class="glass-card p-6 rounded-3xl flex flex-col h-[250px]">
-                    <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50">Ghi chú nhanh <span class="text-[8px] text-sza-blue ml-1">(Lưu trữ vĩnh viễn)</span></h3>
-                    
-                    <!-- Vẫn giữ id cũ để không lỗi code cũ dù không dùng textarea nữa (ẩn đi) -->
-                    <textarea id="studyNote" class="hidden" oninput="saveNote()"></textarea>
-
+                    <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50">Ghi chú cá nhân</h3>
                     <div class="flex gap-3 mb-4">
-                        <input type="text" id="newNoteInput" onkeypress="if(event.key === 'Enter') addPersistentNote()" class="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:border-sza-blue/50 text-white" placeholder="Hôm nay đã học được gì... (Nhấn Enter hoặc Lưu)">
-                        <button onclick="addPersistentNote()" class="btn-sos px-5 rounded-xl text-[10px] font-bold uppercase">Lưu</button>
+                        <input type="text" id="newNoteInput" onkeypress="if(event.key === 'Enter') addNote()" class="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:border-sza-blue/50 text-white" placeholder="Hôm nay đã học được gì... (Nhấn Enter hoặc Lưu)">
+                        <button onclick="addNote()" class="btn-sos px-5 rounded-xl text-[10px] font-bold uppercase">Lưu</button>
                     </div>
-                    
-                    <div id="persistent-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-2">
-                        <!-- Danh sách note render ở đây -->
-                    </div>
+                    <div id="persistent-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
                 </div>
             </div>
         </div>
 
+        <!-- TAB PHÒNG THI -->
+        <div id="section-exam" class="tab-content hidden">
+            <div class="glass-card p-10 rounded-3xl text-center max-w-3xl mx-auto">
+                <h3 class="text-[10px] uppercase tracking-[0.3em] mb-2 opacity-50">Exam Simulator</h3>
+                <p class="text-xs opacity-40 mb-10">Rèn luyện áp lực phòng thi thực tế.</p>
+
+                <div id="exam-display" class="exam-circle mb-10 border-white/10 mx-auto">
+                    <div class="flex flex-col items-center">
+                        <span id="exam-subject-display" class="text-[10px] uppercase text-sza-blue mb-2 tracking-widest hidden font-bold"></span>
+                        <span id="exam-time" class="text-7xl font-extralight tracking-tighter">00:00</span>
+                    </div>
+                </div>
+
+                <div id="exam-controls-setup" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <button onclick="setupExam('Toán học', 90)" class="btn-sos py-6 rounded-2xl flex flex-col items-center justify-center gap-2">
+                        <span class="text-lg font-light">TOÁN</span>
+                        <span class="text-[10px] opacity-50 uppercase tracking-widest">90 Phút</span>
+                    </button>
+                    <button onclick="setupExam('Hóa học', 50)" class="btn-sos py-6 rounded-2xl flex flex-col items-center justify-center gap-2 border-sza-blue/30 text-sza-blue hover:text-black">
+                        <span class="text-lg font-light">HÓA</span>
+                        <span class="text-[10px] opacity-50 uppercase tracking-widest">50 Phút</span>
+                    </button>
+                    <button onclick="setupExam('Sinh học', 50)" class="btn-sos py-6 rounded-2xl flex flex-col items-center justify-center gap-2 border-sza-blue/30 text-sza-blue hover:text-black">
+                        <span class="text-lg font-light">SINH</span>
+                        <span class="text-[10px] opacity-50 uppercase tracking-widest">50 Phút</span>
+                    </button>
+                </div>
+
+                <div id="exam-controls-active" class="hidden flex flex-wrap justify-center gap-4">
+                    <button id="exam-toggle-btn" onclick="toggleExam()" class="btn-sos px-8 py-4 rounded-xl text-xs font-bold uppercase bg-sza-blue text-black">Bắt Đầu</button>
+                    <button onclick="submitExam(false)" class="btn-sos px-8 py-4 rounded-xl text-xs font-bold uppercase bg-red-500/20 text-red-500 border-red-500/50 hover:bg-red-500 hover:text-white">Nộp Bài Sớm</button>
+                    <button onclick="cancelExam()" class="btn-sos px-8 py-4 rounded-xl text-xs font-bold uppercase opacity-50">Hủy Bỏ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB THỐNG KÊ -->
         <div id="section-stats" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-center">
                 <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Tổng Pomo</h4><p id="stat-total-pomo" class="text-3xl font-light">0</p></div>
@@ -242,140 +359,372 @@
                 <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Hóa học</h4><p id="stat-chem-pomo" class="text-3xl font-light">0</p></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 glass-card p-8 rounded-3xl">
-                    <h3 class="text-[10px] uppercase tracking-widest mb-8 opacity-50">Năng suất 7 ngày</h3>
-                    <div class="flex gap-2 items-end justify-between h-48 px-4" id="pomo-chart"></div>
+            <!-- HEATMAP -->
+            <div class="glass-card p-8 rounded-3xl overflow-hidden mb-8">
+                <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50 flex justify-between items-center">
+                    Heatmap Học Tập (90 Ngày)
+                    <span class="text-[8px] opacity-40">Less -> More</span>
+                </h3>
+                <div class="w-full overflow-x-auto pb-4 custom-scrollbar">
+                    <div id="heatmap-container" class="heatmap-grid min-w-max"></div>
                 </div>
-                <div class="lg:col-span-1 space-y-4" id="achievement-list"></div>
+            </div>
+        </div>
+
+        <!-- TAB THÀNH TỰU -->
+        <div id="section-achievements" class="tab-content hidden">
+            <div class="glass-card p-8 rounded-3xl">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h3 class="text-xl font-light text-white mb-1">Bộ Sưu Tập Huy Hiệu</h3>
+                        <p class="text-[10px] uppercase opacity-40 tracking-widest">Tự động mở khóa khi đạt điều kiện</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="achievements-count" class="text-3xl font-light text-sza-blue">0</span>
+                        <span id="achievements-total" class="text-[10px] opacity-40">/ 0</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievements-grid">
+                    <!-- Gen bằng JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB HỒ SƠ & CLOUD -->
+        <div id="section-profile" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-8 rounded-3xl text-center flex flex-col items-center">
+                    <div class="relative group mb-6">
+                        <div id="avatar-preview" class="w-32 h-32 rounded-full border-4 border-white/10 bg-black overflow-hidden flex items-center justify-center text-3xl">👤</div>
+                        <button onclick="document.getElementById('avatar-input').click()" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] uppercase font-bold text-white tracking-widest cursor-pointer">Thay ảnh</button>
+                        <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarUpload(event)">
+                    </div>
+                    
+                    <input type="text" id="profile-name" value="B00 Student" onblur="saveProfile()" class="bg-transparent border-b border-white/20 text-2xl font-light text-center w-full focus:outline-none focus:border-sza-blue pb-2 mb-2 transition">
+                    <p class="text-[10px] uppercase tracking-widest opacity-40 mb-8">Học sinh lớp 12</p>
+
+                    <div class="w-full text-left space-y-4">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span class="text-[10px] uppercase opacity-50">Ngày tham gia</span>
+                            <span id="profile-join-date" class="text-xs opacity-80">Hôm nay</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-3xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50 flex items-center gap-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.134 20.1776 10.1977 17.866 10.0163C17.4116 6.61113 14.4372 4 11 4C7.13401 4 4 7.13401 4 11C4 11.2386 4.0119 11.4744 4.03503 11.7067C2.33664 12.3552 1 14.0722 1 16C1 18.2091 2.79086 20 5 20H17.5V19Z"/></svg>
+                            Đồng bộ Realtime & Thiết bị
+                        </h3>
+                        <p class="text-[11px] opacity-60 mb-6 leading-relaxed">
+                            Mỗi thiết bị sẽ được cấp một ID Đồng bộ (Sync ID). Copy ID này dán vào thiết bị khác để dùng chung dữ liệu. Khi 1 bên thay đổi, bên kia sẽ tự cập nhật.
+                        </p>
+                        
+                        <div class="mb-4">
+                            <label class="text-[9px] uppercase opacity-50 block mb-1">ID Của Thiết Bị Này (Mã để chia sẻ):</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="my-sync-id" readonly class="sync-input w-full p-3 rounded-lg text-xs" value="Đang tải...">
+                                <button onclick="copyMyId()" class="btn-sos px-4 rounded-lg text-[10px]">COPY</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-white/10">
+                            <label class="text-[9px] uppercase opacity-50 block mb-1">Nhập ID để đồng bộ từ máy khác:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="input-sync-id" placeholder="Nhập ID tại đây..." class="sync-input w-full p-3 rounded-lg text-xs">
+                                <button onclick="loginWithSyncId()" class="btn-sos px-4 rounded-lg text-[10px] font-bold bg-sza-blue/20 text-sza-blue border-sza-blue/50">LINK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <footer class="mt-20 text-center pb-10">
-            <p class="text-[9px] uppercase tracking-[0.4em] opacity-20 italic">Focus on the output. B00 Project.</p>
+            <p class="text-[9px] uppercase tracking-[0.4em] opacity-20 italic">Focus on the output. B00 Project V3.</p>
         </footer>
     </div>
 
+    <!-- MAIN SCRIPT (CORE LOGIC & RULE 6 DATA STRUCTURE) -->
     <script>
-        // --- DATA KHỞI TẠO CŨ (TUÂN THỦ RULE 1) ---
-        let logs = JSON.parse(localStorage.getItem('study_logs_sza')) || [];
-        let notes = JSON.parse(localStorage.getItem('study_notes_sza')) || {};
-        let pomoStats = JSON.parse(localStorage.getItem('pomo_stats_sza')) || {
-            total: 0,
-            subjects: { "Sinh học": 0, "Toán học": 0, "Hóa học": 0 },
-            history: []
-        };
-        let userSettings = JSON.parse(localStorage.getItem('user_settings_sza')) || {
-            dailyGoal: 6,
-            streak: 0,
-            lastStudyDate: "",
-            lastGoalDate: "" // Cờ để check random goal
-        };
-
         const $ = (id) => document.getElementById(id);
-        const quotes = ["Đừng dừng lại cho đến khi tự hào.", "Sinh học là chìa khóa của B00.", "Mỗi Pomodoro là một bước tiến.", "Học đi bro, đừng láo."];
 
-        // YÊU CẦU 3: RANDOM GOAL TỪ 2 ĐẾN 10 MỖI NGÀY
-        const todayStrForInit = new Date().toLocaleDateString('vi-VN');
-        if (userSettings.lastGoalDate !== todayStrForInit) {
-            userSettings.dailyGoal = Math.floor(Math.random() * 9) + 2; // Random 2 -> 10
-            userSettings.lastGoalDate = todayStrForInit;
-            localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
-        }
+        // --- RULE 6: DATA STRUCTURE CHUẨN HOÁ ---
+        let appData = {
+            pomoStats: { total: 0, subjects: { "Sinh học": 0, "Toán học": 0, "Hóa học": 0 }, history: [] },
+            sleepLogs: [],
+            persistentNotes: [],
+            settings: { dailyGoal: 6, streak: 0, lastStudyDate: "", lastGoalDate: "", themeChanges: 0, examHistory: [] },
+            achievements: [], 
+            profile: { name: "B00 Student", avatar: "", joinDate: new Date().toLocaleDateString('vi-VN') },
+            lastUpdate: Date.now()
+        };
 
-        // --- YÊU CẦU 2: ĐỒNG HỒ ĐẾM NGƯỢC THPTQG ---
-        function updateExamCountdown() {
-            const examDate = new Date('2026-06-11T00:00:00').getTime();
-            const now = new Date().getTime();
-            const distance = examDate - now;
+        // --- RULE 1: MIGRATION DATA CŨ NẾU CÓ ---
+        function loadLocalData() {
+            let savedStr = localStorage.getItem('sza_app_data_v3');
+            if (savedStr) {
+                appData = JSON.parse(savedStr);
+            } else {
+                // Di chuyển dữ liệu rời rạc v1, v2 sang v3
+                const oldLogs = JSON.parse(localStorage.getItem('study_logs_sza'));
+                const oldPomo = JSON.parse(localStorage.getItem('pomo_stats_sza'));
+                const oldSettings = JSON.parse(localStorage.getItem('user_settings_sza'));
+                const oldNotesList = JSON.parse(localStorage.getItem('persistent_notes_list_sza'));
+                const oldProfile = JSON.parse(localStorage.getItem('profile_data_sza'));
 
-            if (distance < 0) {
-                $('exam-countdown').innerText = "KỲ THI ĐÃ KẾT THÚC!";
-                return;
+                if(oldLogs) appData.sleepLogs = oldLogs;
+                if(oldPomo) appData.pomoStats = oldPomo;
+                if(oldSettings) appData.settings = {...appData.settings, ...oldSettings};
+                if(oldNotesList) appData.persistentNotes = oldNotesList;
+                if(oldProfile) appData.profile = {...appData.profile, ...oldProfile};
+
+                saveLocalData(true); // Lưu ngay bản v3
             }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            $('exam-countdown').innerText = `${days} NGÀY ${hours}H ${minutes}M ${seconds}S`;
         }
 
-
-        // --- Clock & Sleep Log ---
-        function updateTime() {
-            const now = new Date();
-            $('digital-clock').innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
-            $('current-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
+        let isTriggeredByCloud = false;
+        function saveLocalData(triggerUpload = true) {
+            appData.lastUpdate = Date.now();
+            localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
             
-            const h = now.getHours();
-            const canLog = (h >= 22 || h < 5);
-            $('logBtn').disabled = !canLog;
-            if(!canLog) $('lastLogInfo').innerText = "Chỉ khả dụng sau 22h00";
-
-            updateExamCountdown(); // Gọi kèm hàm cập nhật đếm ngược
-        }
-
-        function handleSleepLog() {
-            const today = new Date().toLocaleDateString('vi-VN');
-            if (logs.some(l => l.dateString === today)) {
-                showToast("Hôm nay chấm công rồi bro!", "error");
-                return;
+            // Check UI cập nhật
+            checkAchievements(); 
+            
+            // Báo cho Firebase upload
+            if (triggerUpload && window.uploadToFirebase) {
+                window.uploadToFirebase(appData);
             }
+        }
+
+        // --- DANH SÁCH THÀNH TỰU TIER (RULE 3) ---
+        const ACHIEVEMENTS_DEF = [
+            // Bronze
+            { id: 'first_pomo', tier: 'bronze', name: 'FIRST POMO', desc: 'Hoàn thành 1 Pomodoro', icon: '🌱' },
+            { id: 'math_tester', tier: 'bronze', name: 'MATH TEST', desc: 'Hoàn thành 1 đề Toán', icon: '📐' },
+            { id: 'chem_tester', tier: 'bronze', name: 'CHEM TEST', desc: 'Hoàn thành 1 đề Hóa', icon: '🧪' },
+            { id: 'bio_tester', tier: 'bronze', name: 'BIO TEST', desc: 'Hoàn thành 1 đề Sinh', icon: '🧬' },
+            { id: 'profile_flex', tier: 'bronze', name: 'PROFILE FLEX', desc: 'Đặt tên & Avatar', icon: '😎' },
+            { id: 'theme_shifter', tier: 'bronze', name: 'THEME SHIFTER', desc: 'Đổi giao diện 3 lần', icon: '🎨' },
             
-            const now = new Date();
-            logs.unshift({
-                timestamp: now.getTime(),
-                dateString: today,
-                timeString: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            // Silver
+            { id: 'streak_legend', tier: 'silver', name: 'STREAK LEGEND', desc: 'Giữ Streak 7 ngày', icon: '🔥' },
+            { id: 'night_owl', tier: 'silver', name: 'NIGHT OWL', desc: 'Ngủ sau 00:30 (3 lần)', icon: '🦉' },
+            { id: 'early_bird', tier: 'silver', name: 'EARLY BIRD', desc: 'Ngủ trước 00:00 (3 lần)', icon: '🌅' },
+            { id: 'note_keeper', tier: 'silver', name: 'NOTE KEEPER', desc: 'Lưu 20 ghi chú', icon: '📝' },
+            { id: 'cloud_synced', tier: 'silver', name: 'CLOUD SYNCED', desc: 'Liên kết đồng bộ ID', icon: '☁️' },
+            
+            // Gold
+            { id: 'exam_warrior', tier: 'gold', name: 'EXAM WARRIOR', desc: 'Hoàn thành đủ 3 môn thi', icon: '⚔️' },
+            { id: 'pomo_master', tier: 'gold', name: 'POMO MASTER', desc: 'Đạt mốc 50 Pomodoros', icon: '👑' },
+            { id: 'heatmap_builder', tier: 'gold', name: 'HEATMAP BUILDER', desc: 'Có 30 ngày học tập', icon: '🧱' },
+            { id: 'b00_champion', tier: 'gold', name: 'B00 CHAMPION', desc: 'Đạt 500 Pomodoros tổng', icon: '🏆' },
+        ];
+
+        // --- RULE 3: CHECK THÀNH TỰU ---
+        function checkAchievements() {
+            if(!appData.achievements) appData.achievements = [];
+            let newlyUnlocked = false;
+            
+            const unlock = (id) => {
+                if (!appData.achievements.includes(id)) {
+                    appData.achievements.push(id);
+                    newlyUnlocked = true;
+                    showToast(`🏆 Đã mở khóa: ${ACHIEVEMENTS_DEF.find(a=>a.id===id).name}!`, 'success');
+                }
+            };
+
+            // Basic
+            if (appData.pomoStats.total >= 1) unlock('first_pomo');
+            if (appData.pomoStats.total >= 50) unlock('pomo_master');
+            if (appData.pomoStats.total >= 500) unlock('b00_champion');
+            if (appData.settings.streak >= 7) unlock('streak_legend');
+            if (appData.settings.themeChanges >= 3) unlock('theme_shifter');
+            if (appData.persistentNotes.length >= 20) unlock('note_keeper');
+            if (appData.profile.name !== "B00 Student" && appData.profile.avatar) unlock('profile_flex');
+            
+            // Exams
+            const exams = appData.settings.examHistory || [];
+            if (exams.includes('Toán học')) unlock('math_tester');
+            if (exams.includes('Hóa học')) unlock('chem_tester');
+            if (exams.includes('Sinh học')) unlock('bio_tester');
+            if (exams.includes('Toán học') && exams.includes('Hóa học') && exams.includes('Sinh học')) unlock('exam_warrior');
+
+            // Sleep logs logic
+            let lateCount = 0, earlyCount = 0;
+            appData.sleepLogs.forEach(log => {
+                const parts = log.timeString.split(':');
+                if(parts.length >= 2) {
+                    const h = parseInt(parts[0]), m = parseInt(parts[1]);
+                    if ((h === 0 && m > 30) || (h > 0 && h < 5)) lateCount++;
+                    if (h >= 21 && h <= 23) earlyCount++;
+                }
             });
-            localStorage.setItem('study_logs_sza', JSON.stringify(logs));
-            renderLogs();
-            showToast("Đã ghi nhận giờ ngủ. Ngủ ngon!");
+            if (lateCount >= 3) unlock('night_owl');
+            if (earlyCount >= 3) unlock('early_bird');
+
+            // Heatmap Builder
+            const uniqueDays = new Set(appData.pomoStats.history.map(h => h.date)).size;
+            if (uniqueDays >= 30) unlock('heatmap_builder');
+
+            if (newlyUnlocked) {
+                // Prevent infinite loop if called from saveLocalData
+                if(!isTriggeredByCloud) {
+                    localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+                    if (window.uploadToFirebase) window.uploadToFirebase(appData);
+                }
+                if ($('tab-achievements').classList.contains('active')) renderAchievements();
+            }
         }
 
-        // --- Pomodoro State & Timer ---
+
+        // --- UI RENDERERS ---
+        function renderLogs() {
+            const body = $('logTableBody');
+            body.innerHTML = '';
+            if (!appData.sleepLogs || appData.sleepLogs.length === 0) { $('noDataMsg').classList.remove('hidden'); return; }
+            $('noDataMsg').classList.add('hidden');
+            appData.sleepLogs.forEach((log, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-white/5 hover:bg-white/5 transition";
+                tr.innerHTML = `<td class="p-4 opacity-40">${log.dateString}</td><td class="p-4 font-light text-center">${log.timeString}</td><td class="p-4 text-right"><button onclick="deleteLog(${index})" class="text-red-500/30 hover:text-red-500">✕</button></td>`;
+                body.appendChild(tr);
+            });
+        }
+
+        function renderStudyTab() {
+            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const pomoToday = appData.pomoStats.history.filter(h => h.date === todayStr).length;
+            
+            $('goal-text').innerText = `${appData.settings.dailyGoal} Pomodoros`;
+            $('pomo-count-display').innerText = `Hôm nay: ${pomoToday} phiên`;
+            $('goal-progress-text').innerText = `${pomoToday}/${appData.settings.dailyGoal}`;
+            $('goal-progress-fill').style.width = Math.min((pomoToday / appData.settings.dailyGoal) * 100, 100) + '%';
+            
+            const list = $('schedule-list');
+            list.innerHTML = '';
+            const day = new Date().getDay();
+            const tomorrow = (day + 1) % 7;
+            let tasks = [];
+            
+            if ([1, 2, 3, 4, 0].includes(tomorrow)) tasks.push({ m: 'Toán học', d: 'Chuẩn bị bài' });
+            if ([1, 0].includes(tomorrow)) tasks.push({ m: 'Sinh học', d: 'Môn trọng tâm' });
+            if ([4, 5, 6].includes(tomorrow)) tasks.push({ m: 'Hóa học', d: 'Bài tập về nhà' });
+            if (!tasks.find(t => t.m === 'Sinh học')) tasks.push({ m: 'Sinh học', d: 'Chiến dịch lấy gốc' });
+
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-4 glass-card rounded-2xl border-l-2 border-sza-blue mb-2";
+                div.innerHTML = `<div><div class="text-[10px] font-bold text-sza-blue uppercase">${task.m}</div><div class="text-[9px] opacity-40 italic">${task.d}</div></div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function renderStatsTab() {
+            $('stat-total-pomo').innerText = appData.pomoStats.total;
+            $('stat-bio-pomo').innerText = appData.pomoStats.subjects['Sinh học'] || 0;
+            $('stat-math-pomo').innerText = appData.pomoStats.subjects['Toán học'] || 0;
+            $('stat-chem-pomo').innerText = appData.pomoStats.subjects['Hóa học'] || 0;
+            renderHeatmap();
+        }
+
+        function renderHeatmap() {
+            const container = $('heatmap-container');
+            container.innerHTML = '';
+            const countsMap = {};
+            appData.pomoStats.history.forEach(h => { countsMap[h.date] = (countsMap[h.date] || 0) + 1; });
+
+            const today = new Date();
+            const startDate = new Date(today);
+            startDate.setDate(today.getDate() - 83); 
+            let dayAdjust = startDate.getDay() === 0 ? 6 : startDate.getDay() - 1;
+            startDate.setDate(startDate.getDate() - dayAdjust);
+
+            let current = new Date(startDate);
+            while (current <= today || current.getDay() !== 1) {
+                const dStr = current.toLocaleDateString('vi-VN');
+                const count = countsMap[dStr] || 0;
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell relative group';
+                
+                if (count === 0) cell.style.background = 'rgba(255,255,255,0.05)';
+                else if (count <= 2) cell.style.background = 'rgba(100, 255, 218, 0.2)';
+                else if (count <= 5) cell.style.background = 'rgba(100, 255, 218, 0.5)';
+                else if (count <= 8) cell.style.background = 'rgba(100, 255, 218, 0.8)';
+                else cell.style.background = 'rgba(100, 255, 218, 1)';
+
+                cell.innerHTML = `<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-black/90 text-white text-[8px] whitespace-nowrap px-2 py-1 rounded z-50">${dStr}: ${count} Pomo</div>`;
+                container.appendChild(cell);
+                current.setDate(current.getDate() + 1);
+                if(container.children.length > 200) break;
+            }
+        }
+
+        function renderAchievements() {
+            const grid = $('achievements-grid');
+            grid.innerHTML = '';
+            let unlockedCount = 0;
+
+            ACHIEVEMENTS_DEF.forEach(ach => {
+                const isUnlocked = appData.achievements && appData.achievements.includes(ach.id);
+                if (isUnlocked) unlockedCount++;
+
+                const div = document.createElement('div');
+                div.className = `badge glass-card p-4 rounded-2xl flex flex-col items-center justify-center text-center gap-2 ${isUnlocked ? 'unlocked tier-' + ach.tier : ''}`;
+                div.innerHTML = `
+                    <div class="text-3xl drop-shadow-lg">${ach.icon}</div>
+                    <div class="text-[9px] font-bold uppercase ${isUnlocked ? 'text-white' : 'text-white/30'}">${ach.name}</div>
+                    <div class="text-[8px] opacity-40 leading-tight">${ach.desc}</div>
+                `;
+                grid.appendChild(div);
+            });
+
+            $('achievements-count').innerText = unlockedCount;
+            $('achievements-total').innerText = `/ ${ACHIEVEMENTS_DEF.length}`;
+        }
+
+        function renderProfile() {
+            $('profile-name').value = appData.profile.name;
+            if (appData.profile.avatar) $('avatar-preview').innerHTML = `<img src="${appData.profile.avatar}" class="w-full h-full object-cover">`;
+            $('profile-join-date').innerText = appData.profile.joinDate || "Hôm nay";
+        }
+
+        function renderPersistentNotes() {
+            const listObj = $('persistent-notes-list');
+            listObj.innerHTML = '';
+            if(!appData.persistentNotes || appData.persistentNotes.length === 0) {
+                listObj.innerHTML = `<div class="text-[10px] opacity-30 italic text-center mt-4">Chưa có ghi chú nào...</div>`;
+                return;
+            }
+            appData.persistentNotes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = "flex justify-between items-start bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-sza-blue/30 transition";
+                noteDiv.innerHTML = `
+                    <div class="flex-1 pr-2"><div class="text-[8px] opacity-40 mb-1">${note.date} ${note.time}</div><div class="text-xs text-white break-words">${note.text}</div></div>
+                    <button onclick="deletePersistentNote(${note.id})" class="text-red-400 opacity-50 hover:opacity-100 font-bold ml-2 transition shrink-0">✕</button>
+                `;
+                listObj.appendChild(noteDiv);
+            });
+        }
+
+        // --- CORE LOGIC (Pomo, Theme, Notes, Sleep) ---
         let pomoInterval;
         let pomoSeconds = 25 * 60;
         let isPomoRunning = false;
 
-        function savePomoState() {
-            if (!isPomoRunning) {
-                localStorage.removeItem('pomo_state_sza');
-                return;
-            }
-            localStorage.setItem('pomo_state_sza', JSON.stringify({
-                endTime: Date.now() + (pomoSeconds * 1000),
-                subject: $('pomo-subject').value
-            }));
-        }
-
-        function loadPomoState() {
-            const saved = JSON.parse(localStorage.getItem('pomo_state_sza'));
-            if (saved && saved.endTime > Date.now()) {
-                pomoSeconds = Math.floor((saved.endTime - Date.now()) / 1000);
-                $('pomo-subject').value = saved.subject;
-                startPomo(true); 
-            }
-        }
-
-        function startPomo(isResume = false) {
-            if (isPomoRunning && !isResume) return;
-            
+        function startPomo() {
+            if (isPomoRunning) return;
             clearInterval(pomoInterval); 
-            
             isPomoRunning = true;
             $('pomo-start-btn').disabled = true; 
-            
             $('pomo-display').style.borderColor = "var(--sza-blue)";
-            if(!isResume) new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3').play().catch(()=>{});
             
             pomoInterval = setInterval(() => {
                 pomoSeconds--;
                 if (pomoSeconds <= 0) completePomo();
                 updatePomoUI();
-                if (pomoSeconds % 10 === 0) savePomoState(); 
             }, 1000);
         }
 
@@ -383,14 +732,12 @@
             clearInterval(pomoInterval);
             isPomoRunning = false;
             $('pomo-start-btn').disabled = false; 
-            savePomoState();
         }
 
         function resetPomo() {
             pausePomo();
             pomoSeconds = 25 * 60;
             updatePomoUI();
-            localStorage.removeItem('pomo_state_sza');
             $('pomo-display').style.borderColor = "rgba(255,255,255,0.05)";
         }
 
@@ -404,326 +751,359 @@
         function completePomo() {
             pausePomo();
             const sub = $('pomo-subject').value;
-            pomoStats.total++;
-            pomoStats.subjects[sub]++;
-            pomoStats.history.push({ date: new Date().toLocaleDateString('vi-VN'), subject: sub });
-            localStorage.setItem('pomo_stats_sza', JSON.stringify(pomoStats));
+            appData.pomoStats.total++;
+            if(!appData.pomoStats.subjects[sub]) appData.pomoStats.subjects[sub] = 0;
+            appData.pomoStats.subjects[sub]++;
+            appData.pomoStats.history.push({ date: new Date().toLocaleDateString('vi-VN'), subject: sub });
             
-            updateStreak();
+            saveLocalData();
+            
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
-            
-            // Đọc màu primary hiện tại để bắn pháo hoa đúng vibe
-            const primaryColor = getComputedStyle(document.body).getPropertyValue('--sza-blue').trim();
-            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: [primaryColor, '#ffffff'] });
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#64ffda', '#ffffff'] });
             
             showToast(`+1 Pomodoro ${sub}.`);
             resetPomo();
             if(document.body.classList.contains('in-focus')) exitFocus();
-            renderStudyTab();
+            if ($('tab-study').classList.contains('active')) renderStudyTab();
         }
 
-        function updateStreak() {
-            const todayStr = new Date().toLocaleDateString('vi-VN');
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yStr = yesterday.toLocaleDateString('vi-VN');
+        // --- RULE 2: FIX PHÒNG THI CHUYÊN SÂU ---
+        let examInterval;
+        let examSeconds = 0;
+        let examTotalSeconds = 0;
+        let examSubject = '';
+        let isExamActive = false;
+        let isExamRunning = false;
 
-            if (userSettings.lastStudyDate === yStr) {
-                userSettings.streak++;
-            } else if (userSettings.lastStudyDate !== todayStr) {
-                userSettings.streak = 1;
-            }
-            userSettings.lastStudyDate = todayStr;
-            localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
-            renderHeader();
-        }
-
-        function enterFocus() {
-            document.body.classList.add('in-focus');
-            $('focus-overlay').style.display = 'flex';
-            $('focus-subject-display').innerText = "Đang cày: " + $('pomo-subject').value;
-            startPomo();
-        }
-
-        function exitFocus() {
-            document.body.classList.remove('in-focus');
-            $('focus-overlay').style.display = 'none';
-        }
-
-        // --- Renderers ---
-        function renderLogs() {
-            const body = $('logTableBody');
-            body.innerHTML = '';
-            if (logs.length === 0) { $('noDataMsg').classList.remove('hidden'); return; }
-            $('noDataMsg').classList.add('hidden');
-            logs.forEach((log, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-white/5 hover:bg-white/5 transition";
-                tr.innerHTML = `<td class="p-4 opacity-40">${log.dateString}</td><td class="p-4 font-light text-center">${log.timeString}</td><td class="p-4 text-right"><button onclick="deleteLog(${index})" class="text-red-500/30 hover:text-red-500">×</button></td>`;
-                body.appendChild(tr);
-            });
-        }
-
-        function renderStudyTab() {
-            const todayStr = new Date().toLocaleDateString('vi-VN');
-            const pomoToday = pomoStats.history.filter(h => h.date === todayStr).length;
+        function setupExam(subj, mins) {
+            examSubject = subj;
+            examTotalSeconds = mins * 60;
+            examSeconds = examTotalSeconds;
+            isExamActive = true;
+            isExamRunning = false;
             
-            $('goal-text').innerText = `${userSettings.dailyGoal} Pomodoros`;
-            $('pomo-count-display').innerText = `Hôm nay: ${pomoToday} phiên`;
-            $('goal-progress-text').innerText = `${pomoToday}/${userSettings.dailyGoal}`;
-            $('goal-progress-fill').style.width = Math.min((pomoToday / userSettings.dailyGoal) * 100, 100) + '%';
+            $('exam-controls-setup').classList.add('hidden');
+            $('exam-controls-active').classList.remove('hidden');
+            $('exam-display').style.borderColor = "var(--sza-blue)";
+            $('exam-subject-display').innerText = `ĐỀ THI: ${subj} (${mins} PHÚT)`;
+            $('exam-subject-display').classList.remove('hidden');
+            $('exam-toggle-btn').innerText = "Bắt Đầu";
+            $('exam-display').classList.remove('exam-warning');
             
-            const list = $('schedule-list');
-            list.innerHTML = '';
-            const day = new Date().getDay();
-            const tomorrow = (day + 1) % 7;
-            let tasks = [];
-            
-            if ([1, 2, 3, 4, 0].includes(tomorrow)) tasks.push({ m: 'Toán học', d: 'Chuẩn bị bài' });
-            if ([1, 0].includes(tomorrow)) tasks.push({ m: 'Sinh học', d: 'Môn trọng tâm' });
-            if ([4, 5, 6].includes(tomorrow)) tasks.push({ m: 'Hóa học', d: 'Bài tập về nhà' });
-            
-            if (!tasks.find(t => t.m === 'Sinh học')) {
-                tasks.push({ m: 'Sinh học', d: 'Chiến dịch lấy gốc' });
-            }
-
-            tasks.forEach(task => {
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-4 glass-card rounded-2xl border-l-2 border-sza-blue mb-2";
-                div.innerHTML = `<div><div class="text-[10px] font-bold text-sza-blue uppercase">${task.m}</div><div class="text-[9px] opacity-40 italic">${task.d}</div></div>`;
-                list.appendChild(div);
-            });
-            
-            // Giữ lại logic cũ phòng hờ người dùng muốn export note cũ
-            if($('studyNote')) $('studyNote').value = notes[todayStr] || "";
+            updateExamUI();
         }
 
-        function renderStatsTab() {
-            $('stat-total-pomo').innerText = pomoStats.total;
-            $('stat-bio-pomo').innerText = pomoStats.subjects['Sinh học'];
-            $('stat-math-pomo').innerText = pomoStats.subjects['Toán học'];
-            $('stat-chem-pomo').innerText = pomoStats.subjects['Hóa học'];
-
-            const chart = $('pomo-chart');
-            chart.innerHTML = '';
-            
-            const dailyCounts = [...Array(7)].map((_, idx) => {
-                const d = new Date();
-                d.setDate(d.getDate() - (6 - idx));
-                const dStr = d.toLocaleDateString('vi-VN');
-                return { 
-                    date: dStr, 
-                    count: pomoStats.history.filter(h => h.date === dStr).length 
-                };
-            });
-
-            const maxCount = Math.max(...dailyCounts.map(d => d.count), 1);
-
-            dailyCounts.forEach(day => {
-                const h = (day.count / maxCount) * 100;
-                const bar = document.createElement('div');
-                bar.className = "flex-1 flex flex-col items-center gap-2 group cursor-pointer h-full justify-end";
-                bar.innerHTML = `
-                    <div class="text-[8px] opacity-0 group-hover:opacity-100 mb-1">${day.count}</div>
-                    <div class="w-full bg-[var(--sza-blue)] opacity-20 rounded-t-lg transition-all duration-500 group-hover:opacity-60" style="height: ${h}%"></div>
-                    <span class="text-[8px] opacity-30">${day.date.split('/')[0]}</span>
-                `;
-                chart.appendChild(bar);
-            });
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            $(`section-${tab}`).classList.remove('hidden');
-            $(`tab-${tab}`).classList.add('active');
-            if(tab === 'log') renderLogs();
-            if(tab === 'study') renderStudyTab();
-            if(tab === 'stats') renderStatsTab();
-        }
-
-        function showToast(m, type = "success") {
-            const t = document.createElement('div');
-            t.className = "fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] uppercase tracking-widest z-[200] border shadow-2xl transition-all text-center";
-            const color = type === 'success' ? 'var(--sza-blue)' : '#ef4444';
-            t.style.borderColor = color;
-            t.style.color = color;
-            t.innerText = m;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
-        }
-
-        function saveNote() {
-            notes[new Date().toLocaleDateString('vi-VN')] = $('studyNote').value;
-            localStorage.setItem('study_notes_sza', JSON.stringify(notes));
-        }
-
-        function renderHeader() {
-            $('quote').innerText = `"${quotes[Math.floor(Math.random()*quotes.length)]}"`;
-            if(userSettings.streak > 0) {
-                $('streak-badge').classList.remove('hidden');
-                $('streak-count').innerText = userSettings.streak;
+        function toggleExam() {
+            if (isExamRunning) {
+                // Pause
+                clearInterval(examInterval);
+                isExamRunning = false;
+                $('exam-toggle-btn').innerText = "Tiếp Tục";
+            } else {
+                // Start / Resume
+                isExamRunning = true;
+                $('exam-toggle-btn').innerText = "Tạm Dừng";
+                examInterval = setInterval(() => {
+                    examSeconds--;
+                    updateExamUI();
+                    
+                    // RULE 2: CẢNH BÁO 1 PHÚT CUỐI
+                    if (examSeconds === 60) {
+                        $('exam-display').classList.add('exam-warning');
+                        showToast("⚠️ SẮP HẾT THỜI GIAN, NHANH CHÓNG HOÀN THÀNH BÀI THI!", "error");
+                    }
+                    
+                    if (examSeconds <= 0) submitExam(true);
+                }, 1000);
             }
         }
 
-        function deleteLog(i) { logs.splice(i, 1); localStorage.setItem('study_logs_sza', JSON.stringify(logs)); renderLogs(); }
-        
-        function exportData() {
-            // Bao gồm cả note mới vào file backup
-            const exportDataStr = JSON.stringify({logs, notes, pomoStats, userSettings, persistentNotesList});
-            const blob = new Blob([exportDataStr], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `sos-b00-data.json`;
-            a.click();
+        function updateExamUI() {
+            const h = Math.floor(examSeconds / 3600);
+            const m = Math.floor((examSeconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (examSeconds % 60).toString().padStart(2, '0');
+            $('exam-time').innerText = h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
         }
 
-        function importData(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const data = JSON.parse(ev.target.result);
-                logs = data.logs || [];
-                notes = data.notes || {};
-                pomoStats = data.pomoStats || pomoStats;
-                userSettings = data.userSettings || userSettings;
-                persistentNotesList = data.persistentNotesList || [];
-                
-                localStorage.setItem('study_logs_sza', JSON.stringify(logs));
-                localStorage.setItem('study_notes_sza', JSON.stringify(notes));
-                localStorage.setItem('pomo_stats_sza', JSON.stringify(pomoStats));
-                localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
-                localStorage.setItem('persistent_notes_list_sza', JSON.stringify(persistentNotesList));
-                location.reload();
-            };
-            reader.readAsText(file);
+        function cancelExam() {
+            if(!confirm("Hủy bài thi này? Mọi kết quả sẽ không được ghi nhận.")) return;
+            clearInterval(examInterval);
+            resetExamUI();
         }
 
-        // ==========================================
-        // YÊU CẦU 4: LOGIC ĐỔI THEME
-        // ==========================================
-        function setTheme(theme) {
-            document.body.className = document.body.className.replace(/theme-\w+/g, ''); // Xóa theme cũ
-            if (theme !== 'sos') {
-                document.body.classList.add(`theme-${theme}`);
+        function submitExam(auto = false) {
+            if (!auto && !confirm("Bạn có chắc chắn muốn nộp bài sớm?")) return;
+            clearInterval(examInterval);
+            
+            if(!appData.settings.examHistory) appData.settings.examHistory = [];
+            appData.settings.examHistory.push(examSubject);
+            saveLocalData();
+            
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
+            confetti({ particleCount: 150, spread: 120, origin: { y: 0.5 }, colors: ['#64ffda', '#ff4d4d', '#ffd700'] });
+            
+            showToast(`Đã nộp bài thi ${examSubject}! Kiểm tra huy hiệu nhé.`, 'success');
+            resetExamUI();
+        }
+
+        function resetExamUI() {
+            isExamActive = false;
+            isExamRunning = false;
+            $('exam-controls-setup').classList.remove('hidden');
+            $('exam-controls-active').classList.add('hidden');
+            $('exam-display').style.borderColor = "rgba(255,255,255,0.05)";
+            $('exam-display').classList.remove('exam-warning');
+            $('exam-subject-display').classList.add('hidden');
+            $('exam-time').innerText = "00:00";
+        }
+
+
+        // --- TIỆN ÍCH KHÁC ---
+        function updateTime() {
+            const now = new Date();
+            $('digital-clock').innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
+            $('current-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            const h = now.getHours();
+            const canLog = (h >= 22 || h < 5);
+            $('logBtn').disabled = !canLog;
+            
+            // Countdown Exam
+            const examDate = new Date('2026-06-11T00:00:00').getTime();
+            const distance = examDate - now.getTime();
+            if (distance > 0) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                $('exam-countdown').innerText = `${days} NGÀY ${hours}H ${minutes}M`;
             }
-            localStorage.setItem('selected_theme_sza', theme);
         }
-        
-        // Khởi tạo theme khi load
-        const savedTheme = localStorage.getItem('selected_theme_sza') || 'sos';
-        setTheme(savedTheme);
 
+        function handleSleepLog() {
+            const today = new Date().toLocaleDateString('vi-VN');
+            if (appData.sleepLogs.some(l => l.dateString === today)) { showToast("Hôm nay chấm công rồi bro!", "error"); return; }
+            const now = new Date();
+            appData.sleepLogs.unshift({ timestamp: now.getTime(), dateString: today, timeString: now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) });
+            saveLocalData();
+            renderLogs();
+            showToast("Đã ghi nhận giờ ngủ.");
+        }
 
-        // ==========================================
-        // YÊU CẦU 5: LOGIC GHI CHÚ NHANH VĨNH VIỄN
-        // ==========================================
-        let persistentNotesList = JSON.parse(localStorage.getItem('persistent_notes_list_sza')) || [];
-
-        function addPersistentNote() {
-            const input = $('newNoteInput');
-            const text = input.value.trim();
+        function addNote() {
+            const text = $('newNoteInput').value.trim();
             if (!text) return;
-
-            const newNote = {
-                id: Date.now(),
-                text: text,
-                date: new Date().toLocaleDateString('vi-VN'),
-                time: new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})
-            };
-
-            persistentNotesList.unshift(newNote); // Thêm lên đầu
-            localStorage.setItem('persistent_notes_list_sza', JSON.stringify(persistentNotesList));
-            
-            input.value = '';
+            appData.persistentNotes.unshift({ id: Date.now(), text: text, date: new Date().toLocaleDateString('vi-VN'), time: new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) }); 
+            saveLocalData();
+            $('newNoteInput').value = '';
             renderPersistentNotes();
             showToast('Đã lưu ghi chú');
         }
 
         function deletePersistentNote(id) {
-            persistentNotesList = persistentNotesList.filter(note => note.id !== id);
-            localStorage.setItem('persistent_notes_list_sza', JSON.stringify(persistentNotesList));
+            appData.persistentNotes = appData.persistentNotes.filter(n => n.id !== id);
+            saveLocalData();
             renderPersistentNotes();
         }
 
-        function renderPersistentNotes() {
-            const listObj = $('persistent-notes-list');
-            listObj.innerHTML = '';
-            
-            if(persistentNotesList.length === 0) {
-                listObj.innerHTML = `<div class="text-[10px] opacity-30 italic text-center mt-4">Chưa có ghi chú nào...</div>`;
-                return;
-            }
+        function deleteLog(i) { appData.sleepLogs.splice(i, 1); saveLocalData(); renderLogs(); }
 
-            persistentNotesList.forEach(note => {
-                const noteDiv = document.createElement('div');
-                noteDiv.className = "flex justify-between items-start bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-sza-blue/30 transition";
-                noteDiv.innerHTML = `
-                    <div class="flex-1 pr-2">
-                        <div class="text-[8px] opacity-40 mb-1">${note.date} ${note.time}</div>
-                        <div class="text-xs text-white break-words">${note.text}</div>
-                    </div>
-                    <button onclick="deletePersistentNote(${note.id})" class="text-red-400 opacity-50 hover:opacity-100 font-bold ml-2 transition shrink-0" title="Xóa ghi chú">✕</button>
-                `;
-                listObj.appendChild(noteDiv);
+        function saveProfile() {
+            appData.profile.name = $('profile-name').value || "B00 Student";
+            saveLocalData();
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { appData.profile.avatar = e.target.result; renderProfile(); saveLocalData(); };
+            reader.readAsDataURL(file);
+        }
+
+        function changeTheme(theme) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, ''); 
+            if (theme !== 'sos') document.body.classList.add(`theme-${theme}`);
+            localStorage.setItem('selected_theme_sza', theme);
+            appData.settings.themeChanges = (appData.settings.themeChanges || 0) + 1;
+            saveLocalData();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'text-sza-blue'));
+            $(`section-${tab}`).classList.remove('hidden');
+            $(`tab-${tab}`).classList.add('active', 'text-sza-blue');
+
+            if(tab === 'log') renderLogs();
+            if(tab === 'study') renderStudyTab();
+            if(tab === 'stats') renderStatsTab();
+            if(tab === 'achievements') renderAchievements();
+            if(tab === 'profile') renderProfile();
+        }
+
+        function showToast(m, type = "success") {
+            const t = document.createElement('div');
+            t.className = "fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] uppercase tracking-widest z-[300] border shadow-2xl transition-all text-center";
+            const color = type === 'success' ? 'var(--sza-blue)' : '#ef4444';
+            t.style.borderColor = color;
+            t.style.color = color;
+            t.innerText = m;
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(()=>t.remove(), 300); }, 3000);
+        }
+
+        function enterFocus() { document.body.classList.add('in-focus'); $('focus-overlay').style.display = 'flex'; $('focus-subject-display').innerText = "Đang cày: " + $('pomo-subject').value; startPomo(); }
+        function exitFocus() { document.body.classList.remove('in-focus'); $('focus-overlay').style.display = 'none'; }
+
+        // --- INIT SYSTEM ---
+        loadLocalData();
+        setInterval(updateTime, 1000);
+        updateTime();
+        changeTheme(localStorage.getItem('selected_theme_sza') || 'sos');
+        renderStudyTab();
+        renderPersistentNotes();
+
+    </script>
+
+    <!-- RULE 4: FIREBASE ĐĂNG NHẬP & REALTIME LISTENER -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Cấu hình tương thích Canvas / Local
+        let fbConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            fbConfig = JSON.parse(__firebase_config);
+        } else {
+            fbConfig = {
+                apiKey: "AIzaSyBnda-JlqVtVkzVkmlc_xcc3DzjQ_Umm2Q",
+                authDomain: "sos-app-1c5ff.firebaseapp.com",
+                projectId: "sos-app-1c5ff",
+                appId: "1:756789964813:web:69aaf7fcb50644c4b9a544"
+            };
+        }
+
+        const fbApp = initializeApp(fbConfig);
+        const auth = getAuth(fbApp);
+        const db = getFirestore(fbApp);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sos-b00-app-id';
+        
+        let activeSyncId = localStorage.getItem('sza_sync_id') || null;
+        let unsubscribeSnapshot = null;
+
+        // Gắn listener lắng nghe Cloud Realtime
+        function listenToCloud(uid) {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            
+            const docRef = doc(db, 'artifacts', appId, 'users', uid, 'userData', 'main');
+            
+            document.getElementById('sync-status').innerHTML = '<span class="text-sza-blue flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Đang đồng bộ...</span>';
+            
+            unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data().data;
+                    
+                    // NẾU CLOUD MỚI HƠN LOCAL THÌ MỚI ĐÈ LÊN (Tránh loop)
+                    if (cloudData && cloudData.lastUpdate > appData.lastUpdate) {
+                        isTriggeredByCloud = true; // Flag chống loop save
+                        appData = cloudData;
+                        
+                        // Cập nhật Local Storage im lặng
+                        localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+                        
+                        // Render lại các tab nếu đang bật
+                        if(document.getElementById('tab-log').classList.contains('active')) renderLogs();
+                        if(document.getElementById('tab-study').classList.contains('active')) { renderStudyTab(); renderPersistentNotes(); }
+                        if(document.getElementById('tab-stats').classList.contains('active')) renderStatsTab();
+                        if(document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
+                        if(document.getElementById('tab-profile').classList.contains('active')) renderProfile();
+                        
+                        isTriggeredByCloud = false;
+                        
+                        // Hiển thị toast thông báo realtime thành công nếu là hành động thay đổi lớn
+                        showToast("☁️ Cloud: Đã nhận cập nhật!", "success");
+                    }
+                    
+                    // Thêm achievement Cloud Synced
+                    if(!appData.achievements) appData.achievements = [];
+                    if(!appData.achievements.includes('cloud_synced')) {
+                        appData.achievements.push('cloud_synced');
+                        localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+                        window.uploadToFirebase(appData); // trigger đẩy mây
+                        if(document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
+                    }
+                } else {
+                    // Mây rỗng -> Đẩy local lên
+                    window.uploadToFirebase(appData);
+                }
+            }, (error) => {
+                console.error("Lỗi Realtime Listener", error);
+                document.getElementById('sync-status').innerHTML = '<span class="text-red-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> Lỗi Đồng bộ</span>';
             });
         }
 
+        // Đẩy lên Firebase
+        window.uploadToFirebase = async (data) => {
+            if (!activeSyncId) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', activeSyncId, 'userData', 'main');
+                await setDoc(docRef, { data: data }, { merge: true });
+            } catch (e) {
+                console.error("Upload Firebase Error:", e);
+            }
+        };
 
-        // --- Khởi động ---
-        setInterval(updateTime, 1000);
-        updateTime();
-        renderHeader();
-        renderLogs();
-        renderStudyTab();
-        renderPersistentNotes(); // Khởi tạo danh sách note mới
-        loadPomoState();
-
-		if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("sw.js")
-            .then(() => console.log("SW ok"))
-            .catch(err => console.log("SW lỗi", err));
+        // Khởi tạo Auth Ẩn danh
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.error("Firebase Auth Error:", err);
+            }
         }
-    </script>
 
-    <!-- FIREBASE IMPORT (Đã fix lỗi firebase is not defined) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Nếu chưa có ID đồng bộ nào được set, lấy UID mặc định của thiết bị
+                if (!activeSyncId) {
+                    activeSyncId = user.uid;
+                    localStorage.setItem('sza_sync_id', activeSyncId);
+                }
+                
+                document.getElementById('my-sync-id').value = activeSyncId;
+                listenToCloud(activeSyncId);
+            }
+        });
 
-    <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBnda-JlqVtVkzVkmlc_xcc3DzjQ_Umm2Q",
-      authDomain: "sos-app-1c5ff.firebaseapp.com",
-      projectId: "sos-app-1c5ff",
-    };
+        initAuth();
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    </script>
+        // Nút Copy ID của mình
+        window.copyMyId = () => {
+            const copyText = document.getElementById('my-sync-id');
+            copyText.select();
+            document.execCommand('copy');
+            showToast("Đã copy Sync ID!");
+        };
 
-    <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
-      import {
-        getFirestore,
-        doc,
-        getDoc,
-        setDoc,
-        onSnapshot
-      } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+        // Đăng nhập bằng Sync ID từ máy khác
+        window.loginWithSyncId = () => {
+            const inputId = document.getElementById('input-sync-id').value.trim();
+            if (inputId.length < 10) {
+                showToast("ID Đồng bộ không hợp lệ!", "error");
+                return;
+            }
+            if (confirm("Chuyển sang Sync ID này? Dữ liệu hiện tại sẽ bị ghi đè bởi dữ liệu trên Cloud của ID này.")) {
+                activeSyncId = inputId;
+                localStorage.setItem('sza_sync_id', activeSyncId);
+                document.getElementById('my-sync-id').value = activeSyncId;
+                document.getElementById('input-sync-id').value = '';
+                
+                showToast("Đã kết nối Sync ID mới. Đang tải dữ liệu...");
+                listenToCloud(activeSyncId);
+            }
+        };
 
-      const firebaseConfigModule = {
-        apiKey: "AIzaSyBnda-JlqVtVkzVkmlc_xcc3DzjQ_Umm2Q",
-        authDomain: "sos-app-1c5ff.firebaseapp.com",
-        projectId: "sos-app-1c5ff",
-        appId: "1:756789964813:web:69aaf7fcb50644c4b9a544"
-      };
-
-      const appModule = initializeApp(firebaseConfigModule);
-      const dbModule = getFirestore(appModule);
-
-      const stateRef = doc(dbModule, "sosApp", "mainState");
-
-      window.firebaseSync = { db: dbModule, stateRef, getDoc, setDoc, onSnapshot };
     </script>
 </body>
 </html>
