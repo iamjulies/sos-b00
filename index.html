@@ -16,12 +16,28 @@
             --fire: #ff4d4d;
         }
 
+        /* YÊU CẦU 4: THÊM THEME MỚI */
+        body.theme-sunshine {
+            --ocean-dark: #2a110a;
+            --ocean-deep: #4a2111;
+            --sza-blue: #ffb56b;
+            --sza-white: #fff0e6;
+        }
+
+        body.theme-sour {
+            --ocean-dark: #1a1025;
+            --ocean-deep: #311c4d;
+            --sza-blue: #a3e635;
+            --sza-white: #f3e8ff;
+        }
+
         body {
             background-color: var(--ocean-dark);
             color: var(--sza-white);
             font-family: 'Inter', sans-serif;
             background-image: radial-gradient(circle at 50% 0%, var(--ocean-deep) 0%, var(--ocean-dark) 100%);
             min-height: 100vh;
+            transition: background 0.5s ease, color 0.5s ease; /* Thêm hiệu ứng chuyển theme */
         }
 
         body.in-focus { overflow: hidden; }
@@ -97,6 +113,13 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
             <div>
                 <h1 class="text-6xl font-extralight italic tracking-tighter text-white">SOS <span class="text-xs not-italic font-bold bg-sza-blue text-black px-2 ml-2 rounded">B00</span></h1>
+                
+                <!-- YÊU CẦU 2: ĐỒNG HỒ ĐẾM NGƯỢC THPTQG -->
+                <div class="mt-2 inline-block px-3 py-1.5 rounded-lg bg-white/5 border border-sza-blue/30">
+                    <p class="text-[10px] uppercase tracking-widest text-sza-blue font-bold mb-1">Target: THPTQG 11/06/2026</p>
+                    <div id="exam-countdown" class="text-sm font-mono tracking-widest text-white">Loading...</div>
+                </div>
+
                 <div class="flex items-center gap-4 mt-3">
                     <p id="quote" class="text-[10px] uppercase tracking-widest opacity-40">"Loading purpose..."</p>
                     <div id="streak-badge" class="hidden flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
@@ -107,6 +130,14 @@
             <div class="text-left md:text-right mt-4 md:mt-0">
                 <div id="digital-clock" class="text-2xl font-light tracking-widest">00:00:00</div>
                 <div id="current-date" class="text-[10px] uppercase opacity-30 mt-1">-- --, ----</div>
+                
+                <!-- YÊU CẦU 4: CHUYỂN ĐỔI THEME -->
+                <div class="flex gap-2 mt-4 justify-start md:justify-end items-center">
+                    <span class="text-[9px] uppercase opacity-40 tracking-widest">Vibe:</span>
+                    <button onclick="setTheme('sos')" title="SOS Original" class="w-4 h-4 rounded-full bg-[#050b14] border border-[#64ffda] hover:scale-110 transition"></button>
+                    <button onclick="setTheme('sunshine')" title="Eternal Sunshine (Ariana)" class="w-4 h-4 rounded-full bg-[#4a2111] border border-[#ffb56b] hover:scale-110 transition"></button>
+                    <button onclick="setTheme('sour')" title="Sour (Olivia)" class="w-4 h-4 rounded-full bg-[#311c4d] border border-[#a3e635] hover:scale-110 transition"></button>
+                </div>
             </div>
         </header>
 
@@ -119,7 +150,7 @@
         <div id="section-log" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1 space-y-6">
                 <div class="glass-card p-8 rounded-3xl border-sza-blue/20">
-                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Mục tiêu hôm nay</h3>
+                    <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Mục tiêu hôm nay <span class="text-[8px] text-sza-blue ml-2">(Randomize)</span></h3>
                     <div class="flex justify-between items-end mb-2">
                         <span id="goal-text" class="text-sm font-light">-- Pomodoros</span>
                         <span id="goal-progress-text" class="text-[10px] opacity-50">0/0</span>
@@ -162,7 +193,7 @@
                         <span id="pomo-time" class="text-5xl font-extralight tracking-tighter">25:00</span>
                     </div>
                     
-                    <select id="pomo-subject" onchange="savePomoState()" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] uppercase tracking-widest mb-6 focus:outline-none">
+                    <select id="pomo-subject" onchange="savePomoState()" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] uppercase tracking-widest mb-6 focus:outline-none focus:border-sza-blue">
                         <option value="Sinh học" class="bg-slate-900 text-sza-blue">Môn: SINH HỌC (Ưu tiên)</option>
                         <option value="Toán học" class="bg-slate-900">Môn: TOÁN HỌC</option>
                         <option value="Hóa học" class="bg-slate-900">Môn: HÓA HỌC</option>
@@ -183,9 +214,22 @@
                     <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Lịch học B00 (Cá nhân hóa)</h3>
                     <div id="schedule-list" class="space-y-4"></div>
                 </div>
-                <div class="glass-card p-6 rounded-3xl">
-                    <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50">Ghi chú nhanh</h3>
-                    <textarea id="studyNote" oninput="saveNote()" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs h-28 focus:outline-none focus:border-sza-blue/50" placeholder="Hôm nay đã học được gì..."></textarea>
+                
+                <!-- YÊU CẦU 5: NÂNG CẤP GHI CHÚ NHANH -->
+                <div class="glass-card p-6 rounded-3xl flex flex-col h-[250px]">
+                    <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50">Ghi chú nhanh <span class="text-[8px] text-sza-blue ml-1">(Lưu trữ vĩnh viễn)</span></h3>
+                    
+                    <!-- Vẫn giữ id cũ để không lỗi code cũ dù không dùng textarea nữa (ẩn đi) -->
+                    <textarea id="studyNote" class="hidden" oninput="saveNote()"></textarea>
+
+                    <div class="flex gap-3 mb-4">
+                        <input type="text" id="newNoteInput" onkeypress="if(event.key === 'Enter') addPersistentNote()" class="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 text-xs focus:outline-none focus:border-sza-blue/50 text-white" placeholder="Hôm nay đã học được gì... (Nhấn Enter hoặc Lưu)">
+                        <button onclick="addPersistentNote()" class="btn-sos px-5 rounded-xl text-[10px] font-bold uppercase">Lưu</button>
+                    </div>
+                    
+                    <div id="persistent-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-2">
+                        <!-- Danh sách note render ở đây -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,6 +257,7 @@
     </div>
 
     <script>
+        // --- DATA KHỞI TẠO CŨ (TUÂN THỦ RULE 1) ---
         let logs = JSON.parse(localStorage.getItem('study_logs_sza')) || [];
         let notes = JSON.parse(localStorage.getItem('study_notes_sza')) || {};
         let pomoStats = JSON.parse(localStorage.getItem('pomo_stats_sza')) || {
@@ -223,11 +268,40 @@
         let userSettings = JSON.parse(localStorage.getItem('user_settings_sza')) || {
             dailyGoal: 6,
             streak: 0,
-            lastStudyDate: ""
+            lastStudyDate: "",
+            lastGoalDate: "" // Cờ để check random goal
         };
 
         const $ = (id) => document.getElementById(id);
         const quotes = ["Đừng dừng lại cho đến khi tự hào.", "Sinh học là chìa khóa của B00.", "Mỗi Pomodoro là một bước tiến.", "Học đi bro, đừng láo."];
+
+        // YÊU CẦU 3: RANDOM GOAL TỪ 2 ĐẾN 10 MỖI NGÀY
+        const todayStrForInit = new Date().toLocaleDateString('vi-VN');
+        if (userSettings.lastGoalDate !== todayStrForInit) {
+            userSettings.dailyGoal = Math.floor(Math.random() * 9) + 2; // Random 2 -> 10
+            userSettings.lastGoalDate = todayStrForInit;
+            localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
+        }
+
+        // --- YÊU CẦU 2: ĐỒNG HỒ ĐẾM NGƯỢC THPTQG ---
+        function updateExamCountdown() {
+            const examDate = new Date('2026-06-11T00:00:00').getTime();
+            const now = new Date().getTime();
+            const distance = examDate - now;
+
+            if (distance < 0) {
+                $('exam-countdown').innerText = "KỲ THI ĐÃ KẾT THÚC!";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            $('exam-countdown').innerText = `${days} NGÀY ${hours}H ${minutes}M ${seconds}S`;
+        }
+
 
         // --- Clock & Sleep Log ---
         function updateTime() {
@@ -239,6 +313,8 @@
             const canLog = (h >= 22 || h < 5);
             $('logBtn').disabled = !canLog;
             if(!canLog) $('lastLogInfo').innerText = "Chỉ khả dụng sau 22h00";
+
+            updateExamCountdown(); // Gọi kèm hàm cập nhật đếm ngược
         }
 
         function handleSleepLog() {
@@ -280,33 +356,33 @@
             if (saved && saved.endTime > Date.now()) {
                 pomoSeconds = Math.floor((saved.endTime - Date.now()) / 1000);
                 $('pomo-subject').value = saved.subject;
-                startPomo(true); // resume without sound
+                startPomo(true); 
             }
         }
 
         function startPomo(isResume = false) {
             if (isPomoRunning && !isResume) return;
             
-            clearInterval(pomoInterval); // Fix 1 & 2: Ngăn chặn double interval gây memory leak
+            clearInterval(pomoInterval); 
             
             isPomoRunning = true;
-            $('pomo-start-btn').disabled = true; // Fix 5: Disable Start btn khi đang chạy
+            $('pomo-start-btn').disabled = true; 
             
-            $('pomo-display').style.borderColor = "#64ffda";
+            $('pomo-display').style.borderColor = "var(--sza-blue)";
             if(!isResume) new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3').play().catch(()=>{});
             
             pomoInterval = setInterval(() => {
                 pomoSeconds--;
                 if (pomoSeconds <= 0) completePomo();
                 updatePomoUI();
-                if (pomoSeconds % 10 === 0) savePomoState(); // Auto save every 10s
+                if (pomoSeconds % 10 === 0) savePomoState(); 
             }, 1000);
         }
 
         function pausePomo() {
             clearInterval(pomoInterval);
             isPomoRunning = false;
-            $('pomo-start-btn').disabled = false; // Phục hồi nút Start
+            $('pomo-start-btn').disabled = false; 
             savePomoState();
         }
 
@@ -335,7 +411,10 @@
             
             updateStreak();
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
-            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: ['#64ffda', '#ffffff'] }); // Fix 4: Giảm particleCount chống lag
+            
+            // Đọc màu primary hiện tại để bắn pháo hoa đúng vibe
+            const primaryColor = getComputedStyle(document.body).getPropertyValue('--sza-blue').trim();
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 }, colors: [primaryColor, '#ffffff'] });
             
             showToast(`+1 Pomodoro ${sub}.`);
             resetPomo();
@@ -371,13 +450,6 @@
             $('focus-overlay').style.display = 'none';
         }
 
-        // --- Anti-Distraction ---
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden && isPomoRunning) {
-                showToast("Quay lại học đi bro, đừng láo!", "error");
-            }
-        });
-
         // --- Renderers ---
         function renderLogs() {
             const body = $('logTableBody');
@@ -396,7 +468,6 @@
             const todayStr = new Date().toLocaleDateString('vi-VN');
             const pomoToday = pomoStats.history.filter(h => h.date === todayStr).length;
             
-            // Fix 6: Đồng bộ Goal text với setting thay vì hardcode
             $('goal-text').innerText = `${userSettings.dailyGoal} Pomodoros`;
             $('pomo-count-display').innerText = `Hôm nay: ${pomoToday} phiên`;
             $('goal-progress-text').innerText = `${pomoToday}/${userSettings.dailyGoal}`;
@@ -412,18 +483,19 @@
             if ([1, 0].includes(tomorrow)) tasks.push({ m: 'Sinh học', d: 'Môn trọng tâm' });
             if ([4, 5, 6].includes(tomorrow)) tasks.push({ m: 'Hóa học', d: 'Bài tập về nhà' });
             
-            // Fix 3: Tránh duplicate Sinh học trong lịch trình
             if (!tasks.find(t => t.m === 'Sinh học')) {
                 tasks.push({ m: 'Sinh học', d: 'Chiến dịch lấy gốc' });
             }
 
             tasks.forEach(task => {
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-4 glass-card rounded-2xl border-l-2 border-sza-blue";
+                div.className = "flex items-center justify-between p-4 glass-card rounded-2xl border-l-2 border-sza-blue mb-2";
                 div.innerHTML = `<div><div class="text-[10px] font-bold text-sza-blue uppercase">${task.m}</div><div class="text-[9px] opacity-40 italic">${task.d}</div></div>`;
                 list.appendChild(div);
             });
-            $('studyNote').value = notes[todayStr] || "";
+            
+            // Giữ lại logic cũ phòng hờ người dùng muốn export note cũ
+            if($('studyNote')) $('studyNote').value = notes[todayStr] || "";
         }
 
         function renderStatsTab() {
@@ -450,10 +522,10 @@
             dailyCounts.forEach(day => {
                 const h = (day.count / maxCount) * 100;
                 const bar = document.createElement('div');
-                bar.className = "flex-1 flex flex-col items-center gap-2 group cursor-pointer";
+                bar.className = "flex-1 flex flex-col items-center gap-2 group cursor-pointer h-full justify-end";
                 bar.innerHTML = `
                     <div class="text-[8px] opacity-0 group-hover:opacity-100 mb-1">${day.count}</div>
-                    <div class="w-full bg-sza-blue/10 rounded-t-lg transition-all duration-500 group-hover:bg-sza-blue/40" style="height: ${h}%"></div>
+                    <div class="w-full bg-[var(--sza-blue)] opacity-20 rounded-t-lg transition-all duration-500 group-hover:opacity-60" style="height: ${h}%"></div>
                     <span class="text-[8px] opacity-30">${day.date.split('/')[0]}</span>
                 `;
                 chart.appendChild(bar);
@@ -472,8 +544,8 @@
 
         function showToast(m, type = "success") {
             const t = document.createElement('div');
-            t.className = "fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] uppercase tracking-widest z-[200] border shadow-2xl transition-all";
-            const color = type === 'success' ? '#64ffda' : '#ef4444';
+            t.className = "fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] uppercase tracking-widest z-[200] border shadow-2xl transition-all text-center";
+            const color = type === 'success' ? 'var(--sza-blue)' : '#ef4444';
             t.style.borderColor = color;
             t.style.color = color;
             t.innerText = m;
@@ -497,7 +569,9 @@
         function deleteLog(i) { logs.splice(i, 1); localStorage.setItem('study_logs_sza', JSON.stringify(logs)); renderLogs(); }
         
         function exportData() {
-            const blob = new Blob([JSON.stringify({logs, notes, pomoStats, userSettings})], {type: 'application/json'});
+            // Bao gồm cả note mới vào file backup
+            const exportDataStr = JSON.stringify({logs, notes, pomoStats, userSettings, persistentNotesList});
+            const blob = new Blob([exportDataStr], {type: 'application/json'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `sos-b00-data.json`;
@@ -513,26 +587,143 @@
                 notes = data.notes || {};
                 pomoStats = data.pomoStats || pomoStats;
                 userSettings = data.userSettings || userSettings;
+                persistentNotesList = data.persistentNotesList || [];
+                
                 localStorage.setItem('study_logs_sza', JSON.stringify(logs));
                 localStorage.setItem('study_notes_sza', JSON.stringify(notes));
                 localStorage.setItem('pomo_stats_sza', JSON.stringify(pomoStats));
                 localStorage.setItem('user_settings_sza', JSON.stringify(userSettings));
+                localStorage.setItem('persistent_notes_list_sza', JSON.stringify(persistentNotesList));
                 location.reload();
             };
             reader.readAsText(file);
         }
 
+        // ==========================================
+        // YÊU CẦU 4: LOGIC ĐỔI THEME
+        // ==========================================
+        function setTheme(theme) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, ''); // Xóa theme cũ
+            if (theme !== 'sos') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            localStorage.setItem('selected_theme_sza', theme);
+        }
+        
+        // Khởi tạo theme khi load
+        const savedTheme = localStorage.getItem('selected_theme_sza') || 'sos';
+        setTheme(savedTheme);
+
+
+        // ==========================================
+        // YÊU CẦU 5: LOGIC GHI CHÚ NHANH VĨNH VIỄN
+        // ==========================================
+        let persistentNotesList = JSON.parse(localStorage.getItem('persistent_notes_list_sza')) || [];
+
+        function addPersistentNote() {
+            const input = $('newNoteInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newNote = {
+                id: Date.now(),
+                text: text,
+                date: new Date().toLocaleDateString('vi-VN'),
+                time: new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})
+            };
+
+            persistentNotesList.unshift(newNote); // Thêm lên đầu
+            localStorage.setItem('persistent_notes_list_sza', JSON.stringify(persistentNotesList));
+            
+            input.value = '';
+            renderPersistentNotes();
+            showToast('Đã lưu ghi chú');
+        }
+
+        function deletePersistentNote(id) {
+            persistentNotesList = persistentNotesList.filter(note => note.id !== id);
+            localStorage.setItem('persistent_notes_list_sza', JSON.stringify(persistentNotesList));
+            renderPersistentNotes();
+        }
+
+        function renderPersistentNotes() {
+            const listObj = $('persistent-notes-list');
+            listObj.innerHTML = '';
+            
+            if(persistentNotesList.length === 0) {
+                listObj.innerHTML = `<div class="text-[10px] opacity-30 italic text-center mt-4">Chưa có ghi chú nào...</div>`;
+                return;
+            }
+
+            persistentNotesList.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = "flex justify-between items-start bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-sza-blue/30 transition";
+                noteDiv.innerHTML = `
+                    <div class="flex-1 pr-2">
+                        <div class="text-[8px] opacity-40 mb-1">${note.date} ${note.time}</div>
+                        <div class="text-xs text-white break-words">${note.text}</div>
+                    </div>
+                    <button onclick="deletePersistentNote(${note.id})" class="text-red-400 opacity-50 hover:opacity-100 font-bold ml-2 transition shrink-0" title="Xóa ghi chú">✕</button>
+                `;
+                listObj.appendChild(noteDiv);
+            });
+        }
+
+
+        // --- Khởi động ---
         setInterval(updateTime, 1000);
         updateTime();
         renderHeader();
         renderLogs();
         renderStudyTab();
+        renderPersistentNotes(); // Khởi tạo danh sách note mới
         loadPomoState();
+
 		if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("SW ok"))
-        .catch(err => console.log("SW lỗi", err));
-}
+            navigator.serviceWorker.register("sw.js")
+            .then(() => console.log("SW ok"))
+            .catch(err => console.log("SW lỗi", err));
+        }
+    </script>
+
+    <!-- FIREBASE IMPORT (Đã fix lỗi firebase is not defined) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnda-JlqVtVkzVkmlc_xcc3DzjQ_Umm2Q",
+      authDomain: "sos-app-1c5ff.firebaseapp.com",
+      projectId: "sos-app-1c5ff",
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    </script>
+
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        onSnapshot
+      } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+
+      const firebaseConfigModule = {
+        apiKey: "AIzaSyBnda-JlqVtVkzVkmlc_xcc3DzjQ_Umm2Q",
+        authDomain: "sos-app-1c5ff.firebaseapp.com",
+        projectId: "sos-app-1c5ff",
+        appId: "1:756789964813:web:69aaf7fcb50644c4b9a544"
+      };
+
+      const appModule = initializeApp(firebaseConfigModule);
+      const dbModule = getFirestore(appModule);
+
+      const stateRef = doc(dbModule, "sosApp", "mainState");
+
+      window.firebaseSync = { db: dbModule, stateRef, getDoc, setDoc, onSnapshot };
     </script>
 </body>
 </html>
