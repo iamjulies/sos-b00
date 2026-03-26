@@ -1103,7 +1103,33 @@
                 listenToCloud(activeSyncId);
             }
         };
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+const auth = getAuth(app);
+
+async function initAuth() {
+  try {
+    await signInAnonymously(auth);
+  } catch (err) {
+    console.error(err);
+    $('profile-uid').innerText = 'Lỗi đăng nhập';
+    $('sync-status').innerText = 'Cloud Offline';
+  }
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    $('profile-uid').innerText = user.uid.substring(0, 8) + '...';
+    $('my-sync-id').value = user.uid;
+    $('sync-status').innerText = 'Cloud Active';
+    $('sync-last-time').innerText = 'Đồng bộ lần cuối: vừa xong';
+  } else {
+    $('profile-uid').innerText = 'Chưa đăng nhập';
+    $('my-sync-id').value = 'Đang tải...';
+  }
+});
+
+initAuth();
     </script>
 </body>
 </html>
