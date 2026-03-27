@@ -753,6 +753,23 @@
                 listObj.appendChild(noteDiv);
             });
         }
+		
+		// Hàm này giúp làm mới toàn bộ giao diện khi dữ liệu đám mây thay đổi
+		function renderAll() {
+			if (typeof renderLogs === 'function') renderLogs();
+			if (typeof renderStudyTab === 'function') renderStudyTab();
+			if (typeof renderStatsTab === 'function') renderStatsTab();
+			if (typeof renderAchievements === 'function') renderAchievements();
+			if (typeof renderProfile === 'function') renderProfile();
+			if (typeof renderPersistentNotes === 'function') renderPersistentNotes();
+			
+			// Cập nhật lại thanh tiến trình nếu cần
+			const progressBar = document.getElementById('overallProgress');
+			if (progressBar) {
+				const progress = calculateOverallProgress(); // Giả định bạn có hàm tính %
+				progressBar.style.width = progress + '%';
+			};
+		}
 
         // Logic Pomo
         let pomoInterval;
@@ -1006,7 +1023,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+		import { 
+			getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp 
+		} from "https://www.gstatic.com/firebasejs/10.6.1/firebase-firestore.js";
 
         // Config chuẩn từ backend của bạn
         const firebaseConfig = {
@@ -1094,64 +1113,58 @@
         });
 
         // Hàm Đồng bộ Realtime Kéo về máy
-		function listenToCloud(uid) {
+		let unsubscribeSnapshot = null;
+
+		window.listenToCloud = function() {
+			if (!currentUser) return;
+			const docRef = doc(db, 'users', currentUser.uid);
+
+			// Hủy đăng ký cũ nếu có để tránh rò rỉ bộ nhớ
 			if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-			const docRef = doc(db, 'users', uid);
-			setSyncStatus("Đang đồng bộ...", true);
-
+			// Lắng nghe thay đổi thời gian thực
 			unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
-				if (!docSnap.exists()) {
-					window.uploadToFirebase(window.appData);
-					return;
-				}
+				if (!docSnap.exists()) return;
 
 				const cloudData = docSnap.data().data;
-				if (!cloudData) return;
+				const localData = window.appData;
 
-				const localData = window.appData || appData;
-				const localStamp = localData.lastUpdate || 0;
-				const cloudStamp = cloudData.lastUpdate || 0;
-
-				const localHasRealData =
-					(localData.sleepLogs && localData.sleepLogs.length > 0) ||
-					(localData.persistentNotes && localData.persistentNotes.length > 0) ||
-					(localData.pomoStats && localData.pomoStats.total > 0) ||
-					(localData.achievements && localData.achievements.length > 0) ||
-					(localData.profile && localData.profile.name && localData.profile.name !== "B00 Student");
-
-				if ((!localHasRealData && cloudData) || cloudStamp > localStamp) {
-					isTriggeredByCloud = true;
-					window.setAppData(cloudData);
-					localStorage.setItem('sza_app_data_v3', JSON.stringify(window.appData));
-
-					if (document.getElementById('tab-log').classList.contains('active')) renderLogs();
-					if (document.getElementById('tab-study').classList.contains('active')) { renderStudyTab(); renderPersistentNotes(); }
-					if (document.getElementById('tab-stats').classList.contains('active')) renderStatsTab();
-					if (document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
-					if (document.getElementById('tab-profile').classList.contains('active')) renderProfile();
-
-					isTriggeredByCloud = false;
-					showToast("☁️ Đã đồng bộ từ cloud về máy", "success");
+				// BƯỚC CHẶN VÒNG LẶP: Chỉ cập nhật nếu dữ liệu Cloud thực sự khác Local
+				// So sánh chuỗi JSON là cách nhanh và an toàn nhất cho dữ liệu dạng Object
+				if (JSON.stringify(cloudData) !== JSON.stringify(localData)) {
+					console.log("☁️ Phát hiện thay đổi từ thiết bị khác, đang đồng bộ...");
+					
+					// Cập nhật biến global
+					window.appData = cloudData;
+					
+					// Lưu vào LocalStorage để dùng khi offline
+					localStorage.setItem('sza_app_data_v3', JSON.stringify(cloudData));
+					
+					// Cập nhật toàn bộ giao diện mà không cần load lại trang
+					renderAll();
+					
+					showToast("☁️ Đã đồng bộ dữ liệu mới nhất", "success");
 				}
 			}, (error) => {
-				console.error("Lỗi Realtime Listener", error);
-				setSyncStatus("Lỗi đồng bộ", false, true);
+				console.error("Lỗi lắng nghe Firebase:", error);
 			});
-		}
+		};
 
         // Hàm "Máy đẩy mây" (Gắn vào window để saveLocalData gọi được)
 		window.uploadToFirebase = async (data) => {
 			if (!currentUser) return;
 			try {
-				const payload = data || window.appData || appData;
 				const docRef = doc(db, 'users', currentUser.uid);
-				await setDoc(docRef, { data: payload, lastUpdate: payload.lastUpdate }, { merge: true });
+				// Không dùng Date.now() của máy, dùng serverTimestamp
+				await setDoc(docRef, { 
+					data: data, 
+					serverUpdatedAt: serverTimestamp() // Import thêm serverTimestamp từ firestore
+				}, { merge: true });
 			} catch (e) {
-				console.error("Upload Firebase Error:", e);
+				console.error("Upload Error:", e);
 			}
 		};
-
+		
         // Gắn hàm Auth vào window để HTML onclick gọi được
         window.handleLogin = async function() {
             const email = document.getElementById('emailInput').value.trim();
