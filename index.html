@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOS STUDY LOG | B00 Pro Edition (V3 Realtime)</title>
+    <title>SOS STUDY LOG | B00 Pro Edition (Auto Synced)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -190,7 +190,7 @@
                 </div>
 
                 <div class="flex items-center gap-4 mt-3">
-                    <p id="quote" class="text-[10px] uppercase tracking-widest opacity-40">"Tâm bất biến giữa dòng đời vạn biến"</p>
+                    <p id="quote" class="text-[10px] uppercase tracking-widest opacity-40">"Cố lên các đứa con của Asclepius!"</p>
                     <div id="streak-badge" class="hidden flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
                         🔥 <span id="streak-count">0</span> NGÀY
                     </div>
@@ -267,7 +267,7 @@
                     </div>
                     
                     <select id="pomo-subject" onchange="savePomoState()" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] uppercase tracking-widest mb-6 focus:outline-none focus:border-sza-blue">
-                        <option value="Sinh học" class="bg-slate-900 text-sza-blue">Môn: SINH HỌC (Ưu tiên)</option>
+                        <option value="Sinh học" class="bg-slate-900 text-sza-blue">Môn: SINH HỌC</option>
                         <option value="Toán học" class="bg-slate-900">Môn: TOÁN HỌC</option>
                         <option value="Hóa học" class="bg-slate-900">Môn: HÓA HỌC</option>
                     </select>
@@ -338,7 +338,7 @@
         <!-- TAB THỐNG KÊ -->
         <div id="section-stats" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 text-center">
-                <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Tổng Pomo</h4><p id="stat-total-pomo" class="text-3xl font-light">0</p></div>
+                <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Tổng Pomodoros</h4><p id="stat-total-pomo" class="text-3xl font-light">0</p></div>
                 <div class="glass-card p-6 rounded-3xl border-sza-blue/20"><h4 class="text-[10px] opacity-40 uppercase mb-2 text-sza-blue">Sinh học</h4><p id="stat-bio-pomo" class="text-3xl font-light">0</p></div>
                 <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Toán học</h4><p id="stat-math-pomo" class="text-3xl font-light">0</p></div>
                 <div class="glass-card p-6 rounded-3xl"><h4 class="text-[10px] opacity-40 uppercase mb-2">Hóa học</h4><p id="stat-chem-pomo" class="text-3xl font-light">0</p></div>
@@ -380,8 +380,8 @@
                 <div class="space-y-8">
                     <div class="glass-card p-8 rounded-3xl text-center flex flex-col items-center relative">
                         <div class="relative group mb-6">
-                            <div id="avatar-preview" class="w-32 h-32 rounded-full border-4 border-white/10 bg-black overflow-hidden flex items-center justify-center text-3xl">👤</div>
-                            <button onclick="document.getElementById('avatar-input').click()" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] uppercase font-bold text-white tracking-widest cursor-pointer">Thay ảnh</button>
+                            <div id="avatar-preview" class="w-32 h-32 rounded-full border-4 border-white/10 bg-black overflow-hidden flex items-center justify-center text-3xl">✦‍</div>
+                            <button onclick="document.getElementById('avatar-input').click()" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] uppercase font-bold text-white tracking-widest cursor-pointer">Thay avatar</button>
                             <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarUpload(event)">
                         </div>
                         <input type="text" id="profile-name" value="B00 Student" onblur="saveProfile()" class="bg-transparent border-b border-white/20 text-2xl font-light text-center w-full focus:outline-none focus:border-sza-blue pb-2 mb-2 transition">
@@ -430,7 +430,7 @@
         </div>
 
         <footer class="mt-20 text-center pb-10">
-            <p class="text-[9px] uppercase tracking-[0.4em] opacity-20 italic">Focus on the output. B00 Project V3.</p>
+            <p class="text-[9px] uppercase tracking-[0.4em] opacity-20 italic">Chăm học nhé những người iu! From: @iamjulies</p>
         </footer>
     </div>
 
