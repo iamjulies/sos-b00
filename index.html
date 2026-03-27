@@ -1021,30 +1021,42 @@
 
     <!-- RULE 4: FIREBASE ĐĂNG NHẬP & REALTIME LISTENER XỊN (MODULE CHUẨN) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 		import { 
-			getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
-		} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+			getAuth, 
+			signInWithEmailAndPassword, 
+			createUserWithEmailAndPassword, 
+			onAuthStateChanged, 
+			signOut 
+		} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+		import { 
+			getFirestore, 
+			doc, 
+			setDoc, 
+			getDoc, 
+			onSnapshot, 
+			serverTimestamp 
+		} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-		let unsubscribeSnapshot = null;
-				
-        // Config chuẩn từ backend của bạn
-        const firebaseConfig = {
-            apiKey: "AIzaSyDYWpsF3VHEAJNJcNYg7vQBEvbxlSEMXow",
-            authDomain: "sos-b00.firebaseapp.com",
-            projectId: "sos-b00",
-            storageBucket: "sos-b00.firebasestorage.app",
-            messagingSenderId: "1096013141409",
-            appId: "1:1096013141409:web:86056776c572ee892767e0",
-            measurementId: "G-E0Q2GYQZ6H"
-        };
+		// Cấu hình Firebase của bạn
+		const firebaseConfig = {
+			apiKey: "AIzaSyDYWpsF3VHEAJNJcNYg7vQBEvbxlSEMXow", // Giữ nguyên API Key cũ của bạn ở đây
+			authDomain: "sos-b00.firebaseapp.com",
+			projectId: "sos-b00",
+			storageBucket: "sos-b00.firebasestorage.app",
+			messagingSenderId: "1096013141409",
+			appId: "1:1096013141409:web:86056776c572ee892767e0",
+			measurementId: "G-E0Q2GYQZ6H"
+		};
 
-        const fbApp = initializeApp(firebaseConfig);
-        const auth = getAuth(fbApp);
-        const db = getFirestore(fbApp);
-        
-        let currentUser = null;
+		// Khởi tạo Firebase
+		const app = initializeApp(firebaseConfig);
+		const auth = getAuth(app);
+		const db = getFirestore(app);
+
+		// KHAI BÁO BIẾN NÀY DUY NHẤT MỘT LẦN Ở ĐÂY
+		let unsubscribeSnapshot = null; 
+		let currentUser = null;
 
         // Render UI Đăng nhập cố định tại #auth-container
         function renderAuthUI() {
