@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOS STUDY LOG | B00 Pro Edition (Auto Synced) [BETA]</title>
+    <title>SOS STUDY LOG | B00 Pro Edition (Auto Synced) [BETA 2]</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -756,19 +756,17 @@
 		
 		// Hàm này giúp làm mới toàn bộ giao diện khi dữ liệu đám mây thay đổi
 		function renderAll() {
-			if (typeof renderLogs === 'function') renderLogs();
-			if (typeof renderStudyTab === 'function') renderStudyTab();
-			if (typeof renderStatsTab === 'function') renderStatsTab();
-			if (typeof renderAchievements === 'function') renderAchievements();
-			if (typeof renderProfile === 'function') renderProfile();
+			renderLogs();
+			renderStudyTab();
+			renderStatsTab();
+			renderAchievements(); // Vẽ lại danh sách huy hiệu
+			renderProfile();
 			if (typeof renderPersistentNotes === 'function') renderPersistentNotes();
 			
-			// Cập nhật lại thanh tiến trình nếu cần
-			const progressBar = document.getElementById('overallProgress');
-			if (progressBar) {
-				const progress = calculateOverallProgress(); // Giả định bạn có hàm tính %
-				progressBar.style.width = progress + '%';
-			};
+			// Ép hệ thống kiểm tra lại điều kiện đạt thành tựu
+			if (typeof checkAchievements === 'function') {
+				checkAchievements(); 
+			}
 		}
 
         // Logic Pomo
@@ -961,18 +959,38 @@
 
         function deleteLog(i) { appData.sleepLogs.splice(i, 1); saveLocalData(); renderLogs(); }
 
-        function saveProfile() {
-            appData.profile.name = $('profile-name').value || "B00 Student";
-            saveLocalData();
-        }
+		function saveProfile() {
+					appData.profile.name = $('profile-name').value || "B00 Student";
+					
+					// Lưu ở máy, kiểm tra thành tựu, nhưng KHÔNG gọi upload toàn bộ
+					saveLocalData(false); 
+					
+					// Chỉ bắn đúng cái Tên lên Cloud (Atomic Update)
+					if (typeof window.updateCloudField === 'function') {
+						window.updateCloudField('profile.name', appData.profile.name);
+					}
+				}
 
-        function handleAvatarUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => { appData.profile.avatar = e.target.result; renderProfile(); saveLocalData(); };
-            reader.readAsDataURL(file);
-        }
+		function handleAvatarUpload(event) {
+					const file = event.target.files[0];
+					if (!file) return;
+					const reader = new FileReader();
+					reader.onload = (e) => { 
+						appData.profile.avatar = e.target.result; 
+						renderProfile(); 
+						
+						// Lưu ở máy, nhưng KHÔNG gọi upload toàn bộ
+						saveLocalData(false); 
+						
+						// Chỉ bắn đúng bức ảnh này lên Cloud (Atomic Update)
+						if (typeof window.updateCloudField === 'function') {
+							window.updateCloudField('profile.avatar', appData.profile.avatar);
+						}
+						
+						showToast("🔥 Đã Sync Avatar mới!", "success");
+					};
+					reader.readAsDataURL(file);
+				}
 
         function changeTheme(theme) {
             document.body.className = document.body.className.replace(/theme-\w+/g, ''); 
@@ -1030,12 +1048,7 @@
 			signOut 
 		} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 		import { 
-			getFirestore, 
-			doc, 
-			setDoc, 
-			getDoc, 
-			onSnapshot, 
-			serverTimestamp 
+			getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
 		} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 		// Cấu hình Firebase của bạn
@@ -1053,10 +1066,25 @@
 		const app = initializeApp(firebaseConfig);
 		const auth = getAuth(app);
 		const db = getFirestore(app);
+		
+		window.updateCloudField = async (path, value) => {
+			if (!currentUser || isSyncing) return;
+			const docRef = doc(db, 'users', currentUser.uid);
+			try {
+				await updateDoc(docRef, {
+					[`data.${path}`]: value,
+					"lastSync": serverTimestamp()
+				});
+				console.log(`☁️ Atomic Sync: ${path} updated`);
+			} catch (e) {
+				console.error("Atomic Sync Error:", e);
+			}
+		};
 
 		// KHAI BÁO BIẾN NÀY DUY NHẤT MỘT LẦN Ở ĐÂY
-		let unsubscribeSnapshot = null; 
+		let unsubscribeSnapshot = null;
 		let currentUser = null;
+		let isSyncing = false; // BIẾN QUAN TRỌNG: Chặn máy tự upload khi đang nhận dữ liệu
 
         // Render UI Đăng nhập cố định tại #auth-container
         function renderAuthUI() {
@@ -1129,48 +1157,37 @@
 		window.listenToCloud = function() {
 			if (!currentUser) return;
 			const docRef = doc(db, 'users', currentUser.uid);
-
-			// Hủy đăng ký cũ nếu có để tránh rò rỉ bộ nhớ
 			if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-			// Lắng nghe thay đổi thời gian thực
 			unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
-				if (!docSnap.exists()) return;
+				if (!docSnap.exists() || isSyncing) return;
 
 				const cloudData = docSnap.data().data;
-				const localData = window.appData;
-
-				// BƯỚC CHẶN VÒNG LẶP: Chỉ cập nhật nếu dữ liệu Cloud thực sự khác Local
-				// So sánh chuỗi JSON là cách nhanh và an toàn nhất cho dữ liệu dạng Object
-				if (JSON.stringify(cloudData) !== JSON.stringify(localData)) {
-					console.log("☁️ Phát hiện thay đổi từ thiết bị khác, đang đồng bộ...");
+				if (JSON.stringify(cloudData) !== JSON.stringify(window.appData)) {
+					isSyncing = true; // Khóa upload
 					
-					// Cập nhật biến global
 					window.appData = cloudData;
-					
-					// Lưu vào LocalStorage để dùng khi offline
 					localStorage.setItem('sza_app_data_v3', JSON.stringify(cloudData));
 					
-					// Cập nhật toàn bộ giao diện mà không cần load lại trang
 					renderAll();
 					
-					showToast("☁️ Đã đồng bộ dữ liệu mới nhất", "success");
+					setTimeout(() => { isSyncing = false; }, 1000); // Mở khóa sau 1s
+					showToast("☁️ Đã đồng bộ từ thiết bị khác", "success");
 				}
-			}, (error) => {
-				console.error("Lỗi lắng nghe Firebase:", error);
 			});
 		};
 
         // Hàm "Máy đẩy mây" (Gắn vào window để saveLocalData gọi được)
 		window.uploadToFirebase = async (data) => {
-			if (!currentUser) return;
+			if (!currentUser || isSyncing) return;
 			try {
 				const docRef = doc(db, 'users', currentUser.uid);
-				await setDoc(docRef, { 
+				// Dùng updateDoc thay vì setDoc để chỉ cập nhật những gì thay đổi
+				// và tránh ghi đè lên các trường khác của Firebase (nếu có)
+				await updateDoc(docRef, { 
 					data: data, 
-					lastSync: serverTimestamp() // Dùng giờ của server Firebase
-				}, { merge: true });
-				console.log("☁️ Data synced to cloud");
+					lastSync: serverTimestamp() 
+				});
 			} catch (e) {
 				console.error("Upload Error:", e);
 			}
