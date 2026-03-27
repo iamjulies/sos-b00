@@ -1024,8 +1024,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 		import { 
-			getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp 
-		} from "https://www.gstatic.com/firebasejs/10.6.1/firebase-firestore.js";
+			getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
+		} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
         // Config chuẩn từ backend của bạn
         const firebaseConfig = {
@@ -1155,11 +1155,11 @@
 			if (!currentUser) return;
 			try {
 				const docRef = doc(db, 'users', currentUser.uid);
-				// Không dùng Date.now() của máy, dùng serverTimestamp
 				await setDoc(docRef, { 
 					data: data, 
-					serverUpdatedAt: serverTimestamp() // Import thêm serverTimestamp từ firestore
+					lastSync: serverTimestamp() // Dùng giờ của server Firebase
 				}, { merge: true });
+				console.log("☁️ Data synced to cloud");
 			} catch (e) {
 				console.error("Upload Error:", e);
 			}
