@@ -447,11 +447,33 @@
             profile: { name: "B00 Student", avatar: "", joinDate: new Date().toLocaleDateString('vi-VN') },
             lastUpdate: 0
         };
+		
+		window.appData = appData;
+		window.getAppData = () => appData;
+		window.setAppData = (next) => {
+			appData = next;
+			window.appData = appData;
+			return appData;
+		};
+
+		function setSyncStatus(text, active = false, error = false) {
+			const status = document.getElementById('sync-status');
+			const header = document.getElementById('sync-status-header');
+
+			const html = error
+				? `<span class="text-red-500 bg-red-500/10 px-2 py-1 rounded">${text}</span>`
+				: active
+					? `<span class="text-sza-blue bg-sza-blue/10 px-2 py-1 rounded flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span>${text}</span>`
+					: `<span class="text-red-500 bg-red-500/10 px-2 py-1 rounded">${text}</span>`;
+
+			if (status) status.innerHTML = html;
+			if (header) header.innerHTML = html;
+		}
 
         function loadLocalData() {
             let savedStr = localStorage.getItem('sza_app_data_v3');
             if (savedStr) {
-                appData = JSON.parse(savedStr);
+                window.setAppData(JSON.parse(savedStr));
                 loadPomoState(); // Khôi phục môn đang học
             }
         }
@@ -1052,6 +1074,7 @@
                 if(headerSyncStatus) headerSyncStatus.innerHTML = '<span class="text-sza-blue flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Cloud Active</span>';
                 
                 listenToCloud(user.uid);
+				window.uploadToFirebase(window.appData);
                 
                 // Achievement Sync
                 if(!appData.achievements) appData.achievements = [];
@@ -1079,27 +1102,28 @@
 
 			unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
 				if (!docSnap.exists()) {
-					window.uploadToFirebase(appData);
+					window.uploadToFirebase(window.appData);
 					return;
 				}
 
 				const cloudData = docSnap.data().data;
 				if (!cloudData) return;
 
-				const localStamp = appData.lastUpdate || 0;
+				const localData = window.appData || appData;
+				const localStamp = localData.lastUpdate || 0;
 				const cloudStamp = cloudData.lastUpdate || 0;
 
 				const localHasRealData =
-					(appData.sleepLogs && appData.sleepLogs.length > 0) ||
-					(appData.persistentNotes && appData.persistentNotes.length > 0) ||
-					(appData.pomoStats && appData.pomoStats.total > 0) ||
-					(appData.achievements && appData.achievements.length > 0) ||
-					(appData.profile && appData.profile.name && appData.profile.name !== "B00 Student");
+					(localData.sleepLogs && localData.sleepLogs.length > 0) ||
+					(localData.persistentNotes && localData.persistentNotes.length > 0) ||
+					(localData.pomoStats && localData.pomoStats.total > 0) ||
+					(localData.achievements && localData.achievements.length > 0) ||
+					(localData.profile && localData.profile.name && localData.profile.name !== "B00 Student");
 
 				if ((!localHasRealData && cloudData) || cloudStamp > localStamp) {
 					isTriggeredByCloud = true;
-					appData = cloudData;
-					localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+					window.setAppData(cloudData);
+					localStorage.setItem('sza_app_data_v3', JSON.stringify(window.appData));
 
 					if (document.getElementById('tab-log').classList.contains('active')) renderLogs();
 					if (document.getElementById('tab-study').classList.contains('active')) { renderStudyTab(); renderPersistentNotes(); }
@@ -1117,15 +1141,16 @@
 		}
 
         // Hàm "Máy đẩy mây" (Gắn vào window để saveLocalData gọi được)
-        window.uploadToFirebase = async (data) => {
-            if (!currentUser) return; // Không login thì không đẩy
-            try {
-                const docRef = doc(db, 'users', currentUser.uid);
-                await setDoc(docRef, { data: data, lastUpdate: data.lastUpdate }, { merge: true });
-            } catch (e) {
-                console.error("Upload Firebase Error:", e);
-            }
-        };
+		window.uploadToFirebase = async (data) => {
+			if (!currentUser) return;
+			try {
+				const payload = data || window.appData || appData;
+				const docRef = doc(db, 'users', currentUser.uid);
+				await setDoc(docRef, { data: payload, lastUpdate: payload.lastUpdate }, { merge: true });
+			} catch (e) {
+				console.error("Upload Firebase Error:", e);
+			}
+		};
 
         // Gắn hàm Auth vào window để HTML onclick gọi được
         window.handleLogin = async function() {
