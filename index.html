@@ -1071,32 +1071,50 @@
         });
 
         // Hàm Đồng bộ Realtime Kéo về máy
-        function listenToCloud(uid) {
-			const localStamp = appData.lastUpdate || 0;
-			const cloudStamp = cloudData?.lastUpdate || 0;
+		function listenToCloud(uid) {
+			if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-			const localHasRealData =
-				(appData.sleepLogs && appData.sleepLogs.length > 0) ||
-				(appData.persistentNotes && appData.persistentNotes.length > 0) ||
-				(appData.pomoStats && appData.pomoStats.total > 0) ||
-				(appData.achievements && appData.achievements.length > 0) ||
-				(appData.profile && appData.profile.name && appData.profile.name !== "B00 Student");
+			const docRef = doc(db, 'users', uid);
+			setSyncStatus("Đang đồng bộ...", true);
 
-			if ((!localHasRealData && cloudData) || cloudStamp > localStamp) {
-				isTriggeredByCloud = true;
-				appData = cloudData;
-				localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+			unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
+				if (!docSnap.exists()) {
+					window.uploadToFirebase(appData);
+					return;
+				}
 
-				if (document.getElementById('tab-log').classList.contains('active')) renderLogs();
-				if (document.getElementById('tab-study').classList.contains('active')) { renderStudyTab(); renderPersistentNotes(); }
-				if (document.getElementById('tab-stats').classList.contains('active')) renderStatsTab();
-				if (document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
-				if (document.getElementById('tab-profile').classList.contains('active')) renderProfile();
+				const cloudData = docSnap.data().data;
+				if (!cloudData) return;
 
-				isTriggeredByCloud = false;
-				showToast("☁️ Đã đồng bộ từ cloud về máy", "success");
-			}
-        };
+				const localStamp = appData.lastUpdate || 0;
+				const cloudStamp = cloudData.lastUpdate || 0;
+
+				const localHasRealData =
+					(appData.sleepLogs && appData.sleepLogs.length > 0) ||
+					(appData.persistentNotes && appData.persistentNotes.length > 0) ||
+					(appData.pomoStats && appData.pomoStats.total > 0) ||
+					(appData.achievements && appData.achievements.length > 0) ||
+					(appData.profile && appData.profile.name && appData.profile.name !== "B00 Student");
+
+				if ((!localHasRealData && cloudData) || cloudStamp > localStamp) {
+					isTriggeredByCloud = true;
+					appData = cloudData;
+					localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+
+					if (document.getElementById('tab-log').classList.contains('active')) renderLogs();
+					if (document.getElementById('tab-study').classList.contains('active')) { renderStudyTab(); renderPersistentNotes(); }
+					if (document.getElementById('tab-stats').classList.contains('active')) renderStatsTab();
+					if (document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
+					if (document.getElementById('tab-profile').classList.contains('active')) renderProfile();
+
+					isTriggeredByCloud = false;
+					showToast("☁️ Đã đồng bộ từ cloud về máy", "success");
+				}
+			}, (error) => {
+				console.error("Lỗi Realtime Listener", error);
+				setSyncStatus("Lỗi đồng bộ", false, true);
+			});
+		}
 
         // Hàm "Máy đẩy mây" (Gắn vào window để saveLocalData gọi được)
         window.uploadToFirebase = async (data) => {
