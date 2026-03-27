@@ -1027,6 +1027,8 @@
 			getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
 		} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
+		let unsubscribeSnapshot = null;
+				
         // Config chuẩn từ backend của bạn
         const firebaseConfig = {
             apiKey: "AIzaSyDYWpsF3VHEAJNJcNYg7vQBEvbxlSEMXow",
@@ -1043,7 +1045,6 @@
         const db = getFirestore(fbApp);
         
         let currentUser = null;
-        let unsubscribeSnapshot = null;
 
         // Render UI Đăng nhập cố định tại #auth-container
         function renderAuthUI() {
@@ -1113,8 +1114,6 @@
         });
 
         // Hàm Đồng bộ Realtime Kéo về máy
-		let unsubscribeSnapshot = null;
-
 		window.listenToCloud = function() {
 			if (!currentUser) return;
 			const docRef = doc(db, 'users', currentUser.uid);
