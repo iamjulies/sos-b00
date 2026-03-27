@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- THÊM CHART.JS CHO ĐỒ THỊ 7 NGÀY -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --ocean-dark: #050b14;
@@ -126,7 +128,6 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-        /* Heatmap Styles */
         .heatmap-grid {
             display: grid;
             grid-template-rows: repeat(7, 1fr);
@@ -144,7 +145,6 @@
         }
         .heatmap-cell:hover { transform: scale(1.5); }
         
-        /* Achievement Badges with Tiers */
         .badge {
             transition: all 0.3s;
             filter: grayscale(100%);
@@ -169,24 +169,10 @@
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
             background: linear-gradient(45deg, rgba(255,255,255,0.03), rgba(255, 215, 0, 0.1));
         }
-
-        /* Sync ID Input styling */
-        .sync-input {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--sza-blue);
-            color: var(--sza-white);
-            outline: none;
-            text-align: center;
-            letter-spacing: 0.1em;
-        }
-        .sync-input:focus {
-            box-shadow: 0 0 10px rgba(100, 255, 218, 0.2);
-        }
     </style>
 </head>
 <body class="p-6 md:p-10">
 
-    <!-- Focus Overlay -->
     <div id="focus-overlay">
         <h2 id="focus-subject-display" class="text-[10px] uppercase tracking-[0.5em] mb-10 opacity-50 text-sza-blue">Deep Work Session</h2>
         <div class="text-8xl font-thin tracking-tighter mb-10" id="focus-time">25:00</div>
@@ -204,7 +190,7 @@
                 </div>
 
                 <div class="flex items-center gap-4 mt-3">
-                    <p id="quote" class="text-[10px] uppercase tracking-widest opacity-40">"Loading purpose..."</p>
+                    <p id="quote" class="text-[10px] uppercase tracking-widest opacity-40">"Tâm bất biến giữa dòng đời vạn biến"</p>
                     <div id="streak-badge" class="hidden flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">
                         🔥 <span id="streak-count">0</span> NGÀY
                     </div>
@@ -216,9 +202,9 @@
                 
                 <div class="flex gap-2 mt-4 justify-start md:justify-end items-center">
                     <span class="text-[9px] uppercase opacity-40 tracking-widest">Vibe:</span>
-                    <button onclick="changeTheme('sos')" title="SOS Original" class="w-4 h-4 rounded-full bg-[#050b14] border border-[#64ffda] hover:scale-110 transition"></button>
-                    <button onclick="changeTheme('sunshine')" title="Eternal Sunshine" class="w-4 h-4 rounded-full bg-[#4a2111] border border-[#ffb56b] hover:scale-110 transition"></button>
-                    <button onclick="changeTheme('sour')" title="Sour" class="w-4 h-4 rounded-full bg-[#311c4d] border border-[#a3e635] hover:scale-110 transition"></button>
+                    <button onclick="changeTheme('sos')" class="w-4 h-4 rounded-full bg-[#050b14] border border-[#64ffda] hover:scale-110 transition"></button>
+                    <button onclick="changeTheme('sunshine')" class="w-4 h-4 rounded-full bg-[#4a2111] border border-[#ffb56b] hover:scale-110 transition"></button>
+                    <button onclick="changeTheme('sour')" class="w-4 h-4 rounded-full bg-[#311c4d] border border-[#a3e635] hover:scale-110 transition"></button>
                 </div>
             </div>
         </header>
@@ -245,13 +231,12 @@
                         <span id="goal-progress-text" class="text-[10px] opacity-50">0/0</span>
                     </div>
                     <div class="progress-bar mb-4"><div id="goal-progress-fill" class="progress-fill" style="width: 0%"></div></div>
-                    <p id="goal-motivation" class="text-[9px] italic opacity-30">Cố gắng phân bổ đều để Chủ Nhật không ngộp.</p>
                 </div>
 
                 <div class="glass-card p-8 rounded-3xl text-center">
                     <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50">Chấm công ngủ</h3>
                     <button id="logBtn" onclick="handleSleepLog()" class="btn-sos w-full py-5 rounded-2xl uppercase text-[10px] font-bold mb-4">Ghi Nhận Giờ Ngủ</button>
-                    <p id="lastLogInfo" class="text-[9px] opacity-30 italic">Chỉ khả dụng 22h - 5h</p>
+                    <p class="text-[9px] opacity-30 italic">Chỉ khả dụng 22h - 5h</p>
                 </div>
             </div>
             
@@ -260,7 +245,7 @@
                     <div class="p-6 border-b border-white/5 flex justify-between items-center">
                         <h3 class="text-[10px] uppercase tracking-widest opacity-50">Nhật ký vận hành</h3>
                         <div class="flex gap-4 text-[9px] items-center">
-                            <span id="sync-status" class="text-sza-blue flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Offline</span>
+                            <span id="sync-status-header" class="text-red-500">Offline</span>
                         </div>
                     </div>
                     <div class="max-h-[400px] overflow-y-auto">
@@ -363,7 +348,6 @@
             <div class="glass-card p-8 rounded-3xl overflow-hidden mb-8">
                 <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50 flex justify-between items-center">
                     Heatmap Học Tập (90 Ngày)
-                    <span class="text-[8px] opacity-40">Less -> More</span>
                 </h3>
                 <div class="w-full overflow-x-auto pb-4 custom-scrollbar">
                     <div id="heatmap-container" class="heatmap-grid min-w-max"></div>
@@ -384,61 +368,64 @@
                         <span id="achievements-total" class="text-[10px] opacity-40">/ 0</span>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievements-grid">
-                    <!-- Gen bằng JS -->
-                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievements-grid"></div>
             </div>
         </div>
 
-        <!-- TAB HỒ SƠ & CLOUD -->
+        <!-- TAB HỒ SƠ & CLOUD CỐ ĐỊNH (RULE 4 & RULE 2) -->
         <div id="section-profile" class="tab-content hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card p-8 rounded-3xl text-center flex flex-col items-center">
-                    <div class="relative group mb-6">
-                        <div id="avatar-preview" class="w-32 h-32 rounded-full border-4 border-white/10 bg-black overflow-hidden flex items-center justify-center text-3xl">👤</div>
-                        <button onclick="document.getElementById('avatar-input').click()" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] uppercase font-bold text-white tracking-widest cursor-pointer">Thay ảnh</button>
-                        <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarUpload(event)">
-                    </div>
-                    
-                    <input type="text" id="profile-name" value="B00 Student" onblur="saveProfile()" class="bg-transparent border-b border-white/20 text-2xl font-light text-center w-full focus:outline-none focus:border-sza-blue pb-2 mb-2 transition">
-                    <p class="text-[10px] uppercase tracking-widest opacity-40 mb-8">Học sinh lớp 12</p>
-
-                    <div class="w-full text-left space-y-4">
-                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                            <span class="text-[10px] uppercase opacity-50">Ngày tham gia</span>
-                            <span id="profile-join-date" class="text-xs opacity-80">Hôm nay</span>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- CỘT TRÁI: THÔNG TIN & BIỂU ĐỒ 7 NGÀY -->
+                <div class="space-y-8">
+                    <div class="glass-card p-8 rounded-3xl text-center flex flex-col items-center relative">
+                        <div class="relative group mb-6">
+                            <div id="avatar-preview" class="w-32 h-32 rounded-full border-4 border-white/10 bg-black overflow-hidden flex items-center justify-center text-3xl">👤</div>
+                            <button onclick="document.getElementById('avatar-input').click()" class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[10px] uppercase font-bold text-white tracking-widest cursor-pointer">Thay ảnh</button>
+                            <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="handleAvatarUpload(event)">
+                        </div>
+                        <input type="text" id="profile-name" value="B00 Student" onblur="saveProfile()" class="bg-transparent border-b border-white/20 text-2xl font-light text-center w-full focus:outline-none focus:border-sza-blue pb-2 mb-2 transition">
+                        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-4">Học sinh lớp 12</p>
+                        <div class="w-full text-left border-t border-white/5 pt-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] uppercase opacity-50">Ngày tham gia</span>
+                                <span id="profile-join-date" class="text-xs opacity-80">Hôm nay</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="glass-card p-8 rounded-3xl flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50 flex items-center gap-2">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.134 20.1776 10.1977 17.866 10.0163C17.4116 6.61113 14.4372 4 11 4C7.13401 4 4 7.13401 4 11C4 11.2386 4.0119 11.4744 4.03503 11.7067C2.33664 12.3552 1 14.0722 1 16C1 18.2091 2.79086 20 5 20H17.5V19Z"/></svg>
-                            Đồng bộ Realtime & Thiết bị
+                    <!-- BẢNG ĐỒ THỊ 7 NGÀY (NẰM CỐ ĐỊNH Ở ĐÂY - RULE 2) -->
+                    <div class="glass-card p-8 rounded-3xl border-sza-blue/20">
+                        <h3 class="text-[10px] uppercase tracking-widest mb-6 opacity-50 flex items-center gap-2">
+                            📊 Năng Suất 7 Ngày Gần Nhất
                         </h3>
-                        <p class="text-[11px] opacity-60 mb-6 leading-relaxed">
-                            Mỗi thiết bị sẽ được cấp một ID Đồng bộ (Sync ID). Copy ID này dán vào thiết bị khác để dùng chung dữ liệu. Khi 1 bên thay đổi, bên kia sẽ tự cập nhật.
-                        </p>
-                        
-                        <div class="mb-4">
-                            <label class="text-[9px] uppercase opacity-50 block mb-1">ID Của Thiết Bị Này (Mã để chia sẻ):</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="my-sync-id" readonly class="sync-input w-full p-3 rounded-lg text-xs" value="Đang tải...">
-                                <button onclick="copyMyId()" class="btn-sos px-4 rounded-lg text-[10px]">COPY</button>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 pt-6 border-t border-white/10">
-                            <label class="text-[9px] uppercase opacity-50 block mb-1">Nhập ID để đồng bộ từ máy khác:</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="input-sync-id" placeholder="Nhập ID tại đây..." class="sync-input w-full p-3 rounded-lg text-xs">
-                                <button onclick="loginWithSyncId()" class="btn-sos px-4 rounded-lg text-[10px] font-bold bg-sza-blue/20 text-sza-blue border-sza-blue/50">LINK</button>
-                            </div>
+                        <div class="relative h-56 w-full">
+                            <canvas id="weeklyChartCanvas"></canvas>
                         </div>
                     </div>
                 </div>
+
+                <!-- CỘT PHẢI: FIREBASE AUTH & SYNC (RULE 4) -->
+                <div class="glass-card p-8 rounded-3xl flex flex-col justify-between h-fit">
+                    <div>
+                        <h3 class="text-[10px] uppercase tracking-widest mb-4 opacity-50 flex justify-between items-center">
+                            <span>☁️ Cloud Database Sync</span>
+                            <span id="sync-status" class="text-[9px] text-red-500 bg-red-500/10 px-2 py-1 rounded">Offline</span>
+                        </h3>
+                        
+                        <!-- CONTAINER AUTH CỐ ĐỊNH -->
+                        <div id="auth-container" class="mt-4">
+                            <!-- JS Sẽ đổ Form Đăng Nhập / Trạng thái Đăng Nhập vào đây -->
+                            <div class="animate-pulse space-y-4">
+                                <div class="h-10 bg-white/5 rounded-xl"></div>
+                                <div class="h-10 bg-white/5 rounded-xl"></div>
+                                <div class="h-10 bg-white/5 rounded-xl"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -447,41 +434,25 @@
         </footer>
     </div>
 
-    <!-- MAIN SCRIPT (CORE LOGIC & RULE 6 DATA STRUCTURE) -->
+    <!-- MAIN SCRIPT (CORE LOGIC & UI) -->
     <script>
         const $ = (id) => document.getElementById(id);
 
-        // --- RULE 6: DATA STRUCTURE CHUẨN HOÁ ---
         let appData = {
             pomoStats: { total: 0, subjects: { "Sinh học": 0, "Toán học": 0, "Hóa học": 0 }, history: [] },
             sleepLogs: [],
             persistentNotes: [],
-            settings: { dailyGoal: 6, streak: 0, lastStudyDate: "", lastGoalDate: "", themeChanges: 0, examHistory: [] },
+            settings: { dailyGoal: 6, streak: 0, lastStudyDate: "", selectedSubject: "Sinh học", themeChanges: 0, examHistory: [] },
             achievements: [], 
             profile: { name: "B00 Student", avatar: "", joinDate: new Date().toLocaleDateString('vi-VN') },
             lastUpdate: Date.now()
         };
 
-        // --- RULE 1: MIGRATION DATA CŨ NẾU CÓ ---
         function loadLocalData() {
             let savedStr = localStorage.getItem('sza_app_data_v3');
             if (savedStr) {
                 appData = JSON.parse(savedStr);
-            } else {
-                // Di chuyển dữ liệu rời rạc v1, v2 sang v3
-                const oldLogs = JSON.parse(localStorage.getItem('study_logs_sza'));
-                const oldPomo = JSON.parse(localStorage.getItem('pomo_stats_sza'));
-                const oldSettings = JSON.parse(localStorage.getItem('user_settings_sza'));
-                const oldNotesList = JSON.parse(localStorage.getItem('persistent_notes_list_sza'));
-                const oldProfile = JSON.parse(localStorage.getItem('profile_data_sza'));
-
-                if(oldLogs) appData.sleepLogs = oldLogs;
-                if(oldPomo) appData.pomoStats = oldPomo;
-                if(oldSettings) appData.settings = {...appData.settings, ...oldSettings};
-                if(oldNotesList) appData.persistentNotes = oldNotesList;
-                if(oldProfile) appData.profile = {...appData.profile, ...oldProfile};
-
-                saveLocalData(true); // Lưu ngay bản v3
+                loadPomoState(); // Khôi phục môn đang học
             }
         }
 
@@ -490,18 +461,32 @@
             appData.lastUpdate = Date.now();
             localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
             
-            // Check UI cập nhật
             checkAchievements(); 
             
-            // Báo cho Firebase upload
-            if (triggerUpload && window.uploadToFirebase) {
+            // Hàm uploadToFirebase sẽ được định nghĩa ở thẻ script module phía dưới
+            if (triggerUpload && typeof window.uploadToFirebase === 'function') {
                 window.uploadToFirebase(appData);
             }
         }
 
-        // --- DANH SÁCH THÀNH TỰU TIER (RULE 3) ---
+        // RULE 1: Thêm lại savePomoState() và loadPomoState()
+        function savePomoState() {
+            if(!appData.settings) appData.settings = {};
+            appData.settings.selectedSubject = $('pomo-subject').value;
+            saveLocalData();
+        }
+
+        function loadPomoState() {
+            if(appData.settings && appData.settings.selectedSubject) {
+                const sel = $('pomo-subject');
+                if(Array.from(sel.options).some(o => o.value === appData.settings.selectedSubject)) {
+                    sel.value = appData.settings.selectedSubject;
+                }
+            }
+        }
+
+        // RULE 3: 16 HUY HIỆU (Bao gồm Kim Cương Kỷ Luật)
         const ACHIEVEMENTS_DEF = [
-            // Bronze
             { id: 'first_pomo', tier: 'bronze', name: 'FIRST POMO', desc: 'Hoàn thành 1 Pomodoro', icon: '🌱' },
             { id: 'math_tester', tier: 'bronze', name: 'MATH TEST', desc: 'Hoàn thành 1 đề Toán', icon: '📐' },
             { id: 'chem_tester', tier: 'bronze', name: 'CHEM TEST', desc: 'Hoàn thành 1 đề Hóa', icon: '🧪' },
@@ -509,21 +494,19 @@
             { id: 'profile_flex', tier: 'bronze', name: 'PROFILE FLEX', desc: 'Đặt tên & Avatar', icon: '😎' },
             { id: 'theme_shifter', tier: 'bronze', name: 'THEME SHIFTER', desc: 'Đổi giao diện 3 lần', icon: '🎨' },
             
-            // Silver
             { id: 'streak_legend', tier: 'silver', name: 'STREAK LEGEND', desc: 'Giữ Streak 7 ngày', icon: '🔥' },
             { id: 'night_owl', tier: 'silver', name: 'NIGHT OWL', desc: 'Ngủ sau 00:30 (3 lần)', icon: '🦉' },
             { id: 'early_bird', tier: 'silver', name: 'EARLY BIRD', desc: 'Ngủ trước 00:00 (3 lần)', icon: '🌅' },
             { id: 'note_keeper', tier: 'silver', name: 'NOTE KEEPER', desc: 'Lưu 20 ghi chú', icon: '📝' },
-            { id: 'cloud_synced', tier: 'silver', name: 'CLOUD SYNCED', desc: 'Liên kết đồng bộ ID', icon: '☁️' },
+            { id: 'cloud_synced', tier: 'silver', name: 'CLOUD SYNCED', desc: 'Đăng nhập Cloud Auth', icon: '☁️' },
             
-            // Gold
             { id: 'exam_warrior', tier: 'gold', name: 'EXAM WARRIOR', desc: 'Hoàn thành đủ 3 môn thi', icon: '⚔️' },
             { id: 'pomo_master', tier: 'gold', name: 'POMO MASTER', desc: 'Đạt mốc 50 Pomodoros', icon: '👑' },
             { id: 'heatmap_builder', tier: 'gold', name: 'HEATMAP BUILDER', desc: 'Có 30 ngày học tập', icon: '🧱' },
             { id: 'b00_champion', tier: 'gold', name: 'B00 CHAMPION', desc: 'Đạt 500 Pomodoros tổng', icon: '🏆' },
+            { id: 'diamond_discipline', tier: 'gold', name: 'KIM CƯƠNG KỶ LUẬT', desc: 'Giữ Streak 30 ngày', icon: '💎' },
         ];
 
-        // --- RULE 3: CHECK THÀNH TỰU ---
         function checkAchievements() {
             if(!appData.achievements) appData.achievements = [];
             let newlyUnlocked = false;
@@ -536,23 +519,21 @@
                 }
             };
 
-            // Basic
             if (appData.pomoStats.total >= 1) unlock('first_pomo');
             if (appData.pomoStats.total >= 50) unlock('pomo_master');
             if (appData.pomoStats.total >= 500) unlock('b00_champion');
             if (appData.settings.streak >= 7) unlock('streak_legend');
+            if (appData.settings.streak >= 30) unlock('diamond_discipline'); // Huy hiệu thứ 16
             if (appData.settings.themeChanges >= 3) unlock('theme_shifter');
             if (appData.persistentNotes.length >= 20) unlock('note_keeper');
             if (appData.profile.name !== "B00 Student" && appData.profile.avatar) unlock('profile_flex');
             
-            // Exams
             const exams = appData.settings.examHistory || [];
             if (exams.includes('Toán học')) unlock('math_tester');
             if (exams.includes('Hóa học')) unlock('chem_tester');
             if (exams.includes('Sinh học')) unlock('bio_tester');
             if (exams.includes('Toán học') && exams.includes('Hóa học') && exams.includes('Sinh học')) unlock('exam_warrior');
 
-            // Sleep logs logic
             let lateCount = 0, earlyCount = 0;
             appData.sleepLogs.forEach(log => {
                 const parts = log.timeString.split(':');
@@ -565,22 +546,18 @@
             if (lateCount >= 3) unlock('night_owl');
             if (earlyCount >= 3) unlock('early_bird');
 
-            // Heatmap Builder
             const uniqueDays = new Set(appData.pomoStats.history.map(h => h.date)).size;
             if (uniqueDays >= 30) unlock('heatmap_builder');
 
-            if (newlyUnlocked) {
-                // Prevent infinite loop if called from saveLocalData
-                if(!isTriggeredByCloud) {
-                    localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
-                    if (window.uploadToFirebase) window.uploadToFirebase(appData);
-                }
+            if (newlyUnlocked && !isTriggeredByCloud) {
+                localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+                if (typeof window.uploadToFirebase === 'function') window.uploadToFirebase(appData);
                 if ($('tab-achievements').classList.contains('active')) renderAchievements();
             }
         }
 
 
-        // --- UI RENDERERS ---
+        // UI Renderers
         function renderLogs() {
             const body = $('logTableBody');
             body.innerHTML = '';
@@ -689,6 +666,52 @@
             $('profile-name').value = appData.profile.name;
             if (appData.profile.avatar) $('avatar-preview').innerHTML = `<img src="${appData.profile.avatar}" class="w-full h-full object-cover">`;
             $('profile-join-date').innerText = appData.profile.joinDate || "Hôm nay";
+            renderWeeklyChart(); // Render chart tĩnh ở profile
+        }
+
+        // RULE 2: HÀM VẼ BIỂU ĐỒ 7 NGÀY SỬ DỤNG CHART.JS
+        function renderWeeklyChart() {
+            const ctx = $('weeklyChartCanvas')?.getContext('2d');
+            if(!ctx) return;
+            
+            if(window.weeklyChartInstance) window.weeklyChartInstance.destroy();
+
+            const labels = [];
+            const data = [];
+            const historyMap = {};
+            appData.pomoStats.history.forEach(h => { historyMap[h.date] = (historyMap[h.date] || 0) + 1; });
+
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = d.toLocaleDateString('vi-VN');
+                labels.push(d.toLocaleDateString('vi-VN', {weekday: 'short'}));
+                data.push(historyMap[dateStr] || 0);
+            }
+
+            window.weeklyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số Pomo hoàn thành',
+                        data: data,
+                        backgroundColor: '#64ffda',
+                        borderRadius: 6,
+                        barThickness: 'flex',
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: 'rgba(255,255,255,0.5)', stepSize: 1, precision: 0 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { ticks: { color: 'rgba(255,255,255,0.5)' }, grid: { display: false } }
+                    }
+                }
+            });
         }
 
         function renderPersistentNotes() {
@@ -709,7 +732,7 @@
             });
         }
 
-        // --- CORE LOGIC (Pomo, Theme, Notes, Sleep) ---
+        // Logic Pomo
         let pomoInterval;
         let pomoSeconds = 25 * 60;
         let isPomoRunning = false;
@@ -767,7 +790,7 @@
             if ($('tab-study').classList.contains('active')) renderStudyTab();
         }
 
-        // --- RULE 2: FIX PHÒNG THI CHUYÊN SÂU ---
+        // Logic Phòng Thi
         let examInterval;
         let examSeconds = 0;
         let examTotalSeconds = 0;
@@ -795,24 +818,19 @@
 
         function toggleExam() {
             if (isExamRunning) {
-                // Pause
                 clearInterval(examInterval);
                 isExamRunning = false;
                 $('exam-toggle-btn').innerText = "Tiếp Tục";
             } else {
-                // Start / Resume
                 isExamRunning = true;
                 $('exam-toggle-btn').innerText = "Tạm Dừng";
                 examInterval = setInterval(() => {
                     examSeconds--;
                     updateExamUI();
-                    
-                    // RULE 2: CẢNH BÁO 1 PHÚT CUỐI
                     if (examSeconds === 60) {
                         $('exam-display').classList.add('exam-warning');
                         showToast("⚠️ SẮP HẾT THỜI GIAN, NHANH CHÓNG HOÀN THÀNH BÀI THI!", "error");
                     }
-                    
                     if (examSeconds <= 0) submitExam(true);
                 }, 1000);
             }
@@ -857,18 +875,15 @@
             $('exam-time').innerText = "00:00";
         }
 
-
-        // --- TIỆN ÍCH KHÁC ---
+        // Tiện ích chung
         function updateTime() {
             const now = new Date();
             $('digital-clock').innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
             $('current-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' });
             
             const h = now.getHours();
-            const canLog = (h >= 22 || h < 5);
-            $('logBtn').disabled = !canLog;
+            $('logBtn').disabled = !(h >= 22 || h < 5);
             
-            // Countdown Exam
             const examDate = new Date('2026-06-11T00:00:00').getTime();
             const distance = examDate - now.getTime();
             if (distance > 0) {
@@ -925,7 +940,7 @@
             if (theme !== 'sos') document.body.classList.add(`theme-${theme}`);
             localStorage.setItem('selected_theme_sza', theme);
             appData.settings.themeChanges = (appData.settings.themeChanges || 0) + 1;
-            saveLocalData();
+            saveLocalData(false); // Đổi theme chỉ lưu local cho nhanh
         }
 
         function switchTab(tab) {
@@ -955,7 +970,7 @@
         function enterFocus() { document.body.classList.add('in-focus'); $('focus-overlay').style.display = 'flex'; $('focus-subject-display').innerText = "Đang cày: " + $('pomo-subject').value; startPomo(); }
         function exitFocus() { document.body.classList.remove('in-focus'); $('focus-overlay').style.display = 'none'; }
 
-        // --- INIT SYSTEM ---
+        // Khởi chạy App
         loadLocalData();
         setInterval(updateTime, 1000);
         updateTime();
@@ -965,54 +980,112 @@
 
     </script>
 
-    <!-- RULE 4: FIREBASE ĐĂNG NHẬP & REALTIME LISTENER -->
+    <!-- RULE 4: FIREBASE ĐĂNG NHẬP & REALTIME LISTENER XỊN (MODULE CHUẨN) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Cấu hình tương thích Canvas / Local
-        let fbConfig;
-        if (typeof __firebase_config !== 'undefined') {
-            fbConfig = JSON.parse(__firebase_config);
-        } else {
-            fbConfig = {
-                apiKey: "AIzaSyBnda-JlqVtVkzVkmlc_xcc3DzjQ_Umm2Q",
-                authDomain: "sos-app-1c5ff.firebaseapp.com",
-                projectId: "sos-app-1c5ff",
-                appId: "1:756789964813:web:69aaf7fcb50644c4b9a544"
-            };
-        }
+        // Config chuẩn từ backend của bạn
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYWpsF3VHEAJNJcNYg7vQBEvbxlSEMXow",
+            authDomain: "sos-b00.firebaseapp.com",
+            projectId: "sos-b00",
+            storageBucket: "sos-b00.firebasestorage.app",
+            messagingSenderId: "1096013141409",
+            appId: "1:1096013141409:web:86056776c572ee892767e0",
+            measurementId: "G-E0Q2GYQZ6H"
+        };
 
-        const fbApp = initializeApp(fbConfig);
+        const fbApp = initializeApp(firebaseConfig);
         const auth = getAuth(fbApp);
         const db = getFirestore(fbApp);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sos-b00-app-id';
         
-        let activeSyncId = localStorage.getItem('sza_sync_id') || null;
+        let currentUser = null;
         let unsubscribeSnapshot = null;
 
-        // Gắn listener lắng nghe Cloud Realtime
+        // Render UI Đăng nhập cố định tại #auth-container
+        function renderAuthUI() {
+            const container = document.getElementById('auth-container');
+            if (!container) return;
+
+            if (currentUser) {
+                container.innerHTML = `
+                    <div class="p-5 bg-white/5 rounded-2xl border border-sza-blue/50 mb-2 shadow-lg transition">
+                        <div class="flex items-center gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-full bg-sza-blue flex items-center justify-center text-black font-bold text-2xl shadow-[0_0_15px_rgba(100,255,218,0.4)]">👤</div>
+                            <div class="overflow-hidden">
+                                <p class="text-[9px] uppercase tracking-widest opacity-50 mb-1">Tài khoản Email</p>
+                                <p class="text-sm font-bold text-sza-blue truncate">${currentUser.email}</p>
+                            </div>
+                        </div>
+                        <button onclick="window.handleLogout()" class="w-full bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white font-bold py-3.5 rounded-xl transition-all text-[10px] uppercase tracking-widest">Đăng Xuất</button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="space-y-4 pt-2">
+                        <p class="text-[10px] opacity-60 mb-4 leading-relaxed uppercase tracking-wider text-center">Đăng nhập để lưu & đồng bộ real-time</p>
+                        <input type="email" id="emailInput" placeholder="Email đăng nhập" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs focus:outline-none focus:border-sza-blue text-white transition placeholder:text-white/20">
+                        <input type="password" id="passwordInput" placeholder="Mật khẩu" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs focus:outline-none focus:border-sza-blue text-white transition placeholder:text-white/20" onkeypress="if(event.key === 'Enter') window.handleLogin()">
+                        <div class="flex gap-3 pt-4">
+                            <button onclick="window.handleLogin()" class="flex-1 btn-sos bg-sza-blue text-black font-bold py-4 rounded-xl uppercase text-[10px] tracking-widest shadow-[0_0_15px_rgba(100,255,218,0.2)]">Đăng Nhập</button>
+                            <button onclick="window.handleRegister()" class="flex-1 btn-sos bg-transparent border-sza-blue/50 text-sza-blue font-bold py-4 rounded-xl uppercase text-[10px] tracking-widest hover:bg-sza-blue/10">Đăng Ký</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Lắng nghe trạng thái đăng nhập
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            renderAuthUI();
+            
+            const syncStatusText = document.getElementById('sync-status');
+            const headerSyncStatus = document.getElementById('sync-status-header');
+
+            if (user) {
+                // Đã đăng nhập -> Bật Realtime
+                const statusHtml = '<span class="text-sza-blue bg-sza-blue/10 px-2 py-1 rounded flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Cloud Active</span>';
+                syncStatusText.innerHTML = statusHtml;
+                if(headerSyncStatus) headerSyncStatus.innerHTML = '<span class="text-sza-blue flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Cloud Active</span>';
+                
+                listenToCloud(user.uid);
+                
+                // Achievement Sync
+                if(!appData.achievements) appData.achievements = [];
+                if(!appData.achievements.includes('cloud_synced')) {
+                    appData.achievements.push('cloud_synced');
+                    localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
+                    if(document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
+                    showToast("🏆 Đã mở khóa: CLOUD SYNCED!");
+                }
+            } else {
+                // Chưa đăng nhập -> Tắt lắng nghe
+                if (unsubscribeSnapshot) unsubscribeSnapshot();
+                const offlineHtml = '<span class="text-red-500 bg-red-500/10 px-2 py-1 rounded">Offline</span>';
+                syncStatusText.innerHTML = offlineHtml;
+                if(headerSyncStatus) headerSyncStatus.innerHTML = offlineHtml;
+            }
+        });
+
+        // Hàm Đồng bộ Realtime Kéo về máy
         function listenToCloud(uid) {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
-            
-            const docRef = doc(db, 'artifacts', appId, 'users', uid, 'userData', 'main');
-            
-            document.getElementById('sync-status').innerHTML = '<span class="text-sza-blue flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sza-blue animate-pulse"></span> Đang đồng bộ...</span>';
+            // Cấu trúc Data mới: users/{uid}
+            const docRef = doc(db, 'users', uid);
             
             unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data().data;
-                    
-                    // NẾU CLOUD MỚI HƠN LOCAL THÌ MỚI ĐÈ LÊN (Tránh loop)
+                    // Logic chống lặp vĩnh cửu: Chỉ đè lên local nếu Cloud mới hơn
                     if (cloudData && cloudData.lastUpdate > appData.lastUpdate) {
-                        isTriggeredByCloud = true; // Flag chống loop save
+                        isTriggeredByCloud = true; 
                         appData = cloudData;
-                        
-                        // Cập nhật Local Storage im lặng
                         localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
                         
-                        // Render lại các tab nếu đang bật
+                        // Render lại UI nếu đang mở
                         if(document.getElementById('tab-log').classList.contains('active')) renderLogs();
                         if(document.getElementById('tab-study').classList.contains('active')) { renderStudyTab(); renderPersistentNotes(); }
                         if(document.getElementById('tab-stats').classList.contains('active')) renderStatsTab();
@@ -1020,116 +1093,56 @@
                         if(document.getElementById('tab-profile').classList.contains('active')) renderProfile();
                         
                         isTriggeredByCloud = false;
-                        
-                        // Hiển thị toast thông báo realtime thành công nếu là hành động thay đổi lớn
-                        showToast("☁️ Cloud: Đã nhận cập nhật!", "success");
-                    }
-                    
-                    // Thêm achievement Cloud Synced
-                    if(!appData.achievements) appData.achievements = [];
-                    if(!appData.achievements.includes('cloud_synced')) {
-                        appData.achievements.push('cloud_synced');
-                        localStorage.setItem('sza_app_data_v3', JSON.stringify(appData));
-                        window.uploadToFirebase(appData); // trigger đẩy mây
-                        if(document.getElementById('tab-achievements').classList.contains('active')) renderAchievements();
+                        showToast("☁️ Đã đồng bộ từ điện thoại về máy", "success");
                     }
                 } else {
-                    // Mây rỗng -> Đẩy local lên
+                    // Nếu Cloud chưa có gì -> Đẩy local lên
                     window.uploadToFirebase(appData);
                 }
             }, (error) => {
                 console.error("Lỗi Realtime Listener", error);
-                document.getElementById('sync-status').innerHTML = '<span class="text-red-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> Lỗi Đồng bộ</span>';
+                document.getElementById('sync-status').innerHTML = '<span class="text-red-500 bg-red-500/10 px-2 py-1 rounded">Lỗi Mạng</span>';
             });
         }
 
-        // Đẩy lên Firebase
+        // Hàm "Máy đẩy mây" (Gắn vào window để saveLocalData gọi được)
         window.uploadToFirebase = async (data) => {
-            if (!activeSyncId) return;
+            if (!currentUser) return; // Không login thì không đẩy
             try {
-                const docRef = doc(db, 'artifacts', appId, 'users', activeSyncId, 'userData', 'main');
-                await setDoc(docRef, { data: data }, { merge: true });
+                const docRef = doc(db, 'users', currentUser.uid);
+                await setDoc(docRef, { data: data, lastUpdate: data.lastUpdate }, { merge: true });
             } catch (e) {
                 console.error("Upload Firebase Error:", e);
             }
         };
 
-        // Khởi tạo Auth Ẩn danh
-        async function initAuth() {
-            try {
-                await signInAnonymously(auth);
-            } catch (err) {
-                console.error("Firebase Auth Error:", err);
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Nếu chưa có ID đồng bộ nào được set, lấy UID mặc định của thiết bị
-                if (!activeSyncId) {
-                    activeSyncId = user.uid;
-                    localStorage.setItem('sza_sync_id', activeSyncId);
-                }
-                
-                document.getElementById('my-sync-id').value = activeSyncId;
-                listenToCloud(activeSyncId);
-            }
-        });
-
-        initAuth();
-
-        // Nút Copy ID của mình
-        window.copyMyId = () => {
-            const copyText = document.getElementById('my-sync-id');
-            copyText.select();
-            document.execCommand('copy');
-            showToast("Đã copy Sync ID!");
+        // Gắn hàm Auth vào window để HTML onclick gọi được
+        window.handleLogin = async function() {
+            const email = document.getElementById('emailInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+            if(!email || !pass) return showToast('Nhập email và mật khẩu đi bro!', 'error');
+            try { 
+                await signInWithEmailAndPassword(auth, email, pass); 
+                showToast('Đăng nhập thành công!'); 
+            } catch(e) { showToast('Sai Email hoặc Mật khẩu!', 'error'); }
         };
 
-        // Đăng nhập bằng Sync ID từ máy khác
-        window.loginWithSyncId = () => {
-            const inputId = document.getElementById('input-sync-id').value.trim();
-            if (inputId.length < 10) {
-                showToast("ID Đồng bộ không hợp lệ!", "error");
-                return;
-            }
-            if (confirm("Chuyển sang Sync ID này? Dữ liệu hiện tại sẽ bị ghi đè bởi dữ liệu trên Cloud của ID này.")) {
-                activeSyncId = inputId;
-                localStorage.setItem('sza_sync_id', activeSyncId);
-                document.getElementById('my-sync-id').value = activeSyncId;
-                document.getElementById('input-sync-id').value = '';
-                
-                showToast("Đã kết nối Sync ID mới. Đang tải dữ liệu...");
-                listenToCloud(activeSyncId);
-            }
+        window.handleRegister = async function() {
+            const email = document.getElementById('emailInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+            if(!email || !pass) return showToast('Nhập email và mật khẩu đi bro!', 'error');
+            try { 
+                await createUserWithEmailAndPassword(auth, email, pass);
+                showToast('Tạo tài khoản thành công!');
+                window.uploadToFirebase(appData); // Đẩy ngay data đang có lên nick mới
+            } catch(e) { showToast('Lỗi đăng ký: ' + e.message, 'error'); }
         };
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-const auth = getAuth(app);
+        window.handleLogout = async function() {
+            try { await signOut(auth); showToast('Đã đăng xuất an toàn'); } 
+            catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+        };
 
-async function initAuth() {
-  try {
-    await signInAnonymously(auth);
-  } catch (err) {
-    console.error(err);
-    $('profile-uid').innerText = 'Lỗi đăng nhập';
-    $('sync-status').innerText = 'Cloud Offline';
-  }
-}
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    $('profile-uid').innerText = user.uid.substring(0, 8) + '...';
-    $('my-sync-id').value = user.uid;
-    $('sync-status').innerText = 'Cloud Active';
-    $('sync-last-time').innerText = 'Đồng bộ lần cuối: vừa xong';
-  } else {
-    $('profile-uid').innerText = 'Chưa đăng nhập';
-    $('my-sync-id').value = 'Đang tải...';
-  }
-});
-
-initAuth();
     </script>
 </body>
 </html>
